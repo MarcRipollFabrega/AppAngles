@@ -7,8 +7,7 @@ const supabaseAnonKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnl6c2xnYmF4cGljZmprbHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2NTY5NTIsImV4cCI6MjA3MDIzMjk1Mn0.VjqrlFp_MfilwuTw4OSAdK3aEIwfXB2bdq6GLoJREoo";
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-// TODO el código que interactúa con el HTML va dentro de esta función,
-// definida una sola vez.
+
 document.addEventListener("DOMContentLoaded", () => {
   /***************************************************************************/
   /* VARIABLES DE LOS FORMULARIOS */
@@ -45,22 +44,48 @@ document.addEventListener("DOMContentLoaded", () => {
       cambiarFormulario();
     });
   });
-
+  /***************************************************************************/
+  /* REGISTRO DE USUARIO */
+  /**************************************************************************/
   // Evento de envío del formulario de registro
   registroForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+    const nombre = nombreInput.value;
     const email = emailInput.value;
     const password = passwordInput.value;
+    //Comprueba si el usuario a dejado algun campo en blanco
+    if (nombre == "" || email == "" || password == "") {
+      alert("El campo no puede estar en blanco");
+      return;
+    }
 
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: email,
-      password: password,
-    });
+    const { data, error } = await supabaseClient.auth.signUp(
+      {
+        email: email,
+        password: password,
+      },
+      {
+        data: {
+          nombre: nombre,
+        },
+      }
+    );
+    //Manejo de errores en el registro de usuario
 
-    if (error) {
-      console.error("Error al registrar usuario:", error.message);
-      alert("Error al registrar usuario: " + error.message);
+    if (error || data.user === null) {
+      if (error.message.includes("Email address")) {
+        console.error(
+          "Error: el correo electrónico es inválido o ya está en uso."
+        );
+        alert("El correo electrónico no es válido o ya está en uso.");
+      } else if (error.message.includes("Password should be at least")) {
+        console.error("Error: la contraseña es demasiado corta.");
+        alert("La contraseña debe tener al menos 6 caracteres.");
+      } else {
+        // Este else actúa como nuestro 'default'
+        console.error("Error al registrar usuario:", error.message);
+        alert("Ocurrió un error inesperado: " + error.message);
+      }
     } else {
       console.log("Usuario registrado con éxito:", data.user);
       alert(
