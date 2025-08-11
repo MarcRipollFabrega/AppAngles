@@ -1,0 +1,182 @@
+/*RESET*/
+*,::after, ::before {
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    /* Establece la fuente principal para todo el texto en el cuerpo de la página */
+    font-family: "Gentium Book Plus", serif;
+    /* Define la altura del cuerpo como el 100% */
+    height: 100vh;
+    /*Imagen de fondo */
+    background-image:url(/img/fondo.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    /*Centrar el formulario */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+input {
+    font: inherit; /*Heredan la fuente*/
+}
+/*Estilos comunes en los dos formularios */
+#registro-form, #login-form {
+    /* Establece el relleno interno del formulario.
+       - '3rem' es para el relleno superior e inferior.
+       - '1.5rem' es para el relleno izquierdo y derecho. */
+    padding: 3rem 1.5rem;
+    
+    /* Le da un fondo blanco al formulario. */
+    background-color: white;
+    
+    /* Controla el ancho del formulario.
+       - 'min(350px, 90%)' significa que el ancho será el valor más pequeño entre 350 píxeles
+         y el 90% del ancho del contenedor padre. Esto lo hace adaptable:
+         en pantallas grandes, su ancho máximo es de 350px; en pantallas pequeñas,
+         ocupa el 90% para no salirse de los bordes. */
+    width: min(350px, 90%);
+    
+    /* Redondea las esquinas del formulario. */
+    border-radius: 10px;
+    /*Centra los elementos del formulario */
+    text-align:center;
+    
+}
+
+#login-form {
+    display: none;
+}
+
+.form_title{
+    font-size: 2rem;
+    text-shadow: 2px 2px 4px #686666;
+    
+}
+.form_inputs{
+    /* Establece un margen externo para separar este bloque de los elementos de arriba y abajo.
+       - '2rem 0 1.5rem' significa: 2rem arriba, 0 a los lados y 1.5rem abajo. */
+    margin: 2rem 0 1.5rem;
+    
+    /* Convierte el contenedor en una cuadrícula (grid) para organizar los elementos hijos.
+       Cada campo de entrada (input) será una celda de esta cuadrícula. */
+    display:grid;
+    
+    /* Crea un espacio uniforme entre las filas y columnas de la cuadrícula.
+       En este caso, deja 1.5rem de espacio entre cada campo de entrada. */
+    gap: 1.5rem;
+    
+    /* Define el color del texto para todos los elementos dentro de este contenedor. */
+    color:#6b6b6b;
+}
+.form_label{
+    /* Hace que la etiqueta ocupe el 100% del ancho disponible en su contenedor. */
+    width:100%;
+    
+    /* Configura la etiqueta como una cuadrícula con un área llamada 'input'.
+       Esto es clave para superponer el campo de entrada y el texto flotante. */
+    display: grid;
+    grid-template-areas: "input";
+}
+
+.form_input {
+    /* Coloca el campo de entrada en el área 'input' de la cuadrícula. */
+    grid-area: input;
+    
+    /* Ocupa el 100% del ancho de su contenedor. */
+    width: 100%;
+    
+    /* Redondea las esquinas del campo de entrada. */
+    border-radius: 10px;
+    
+    /* Añade un borde sólido de 1px con un color gris claro. */
+    border: 1px solid #d7d0d0;
+    
+    /* Agrega un relleno interno para que el texto no se pegue a los bordes. */
+    padding: .7rem 1.5rem;
+}
+
+.form_text {
+    /* Coloca el texto (el 'placeholder' flotante) en la misma área 'input'.
+       Esto hace que se superponga con el campo de entrada. */
+    grid-area: input;
+    
+    /* Asegura que el texto esté encima del campo de entrada. */
+    z-index:100;
+    
+    /* Limita el ancho del texto a lo que necesite, sin ocupar todo el espacio. */
+    width: max-content;
+    
+    /* Hace que el alto del texto sea igual al del campo de entrada. */
+    height: 100%;
+    
+    /* Agrega un margen izquierdo para separarlo del borde del campo de entrada. */
+    margin-left: 1rem;
+    
+    /* Añade un relleno a los lados del texto. */
+    padding: 0 .5rem;
+    
+    /* Usa flexbox para alinear el texto verticalmente en el centro. */
+    display: flex;
+    align-items: center;
+    
+    /* Establece el punto de origen de las transformaciones.
+       Esto hará que el texto se "mueva" desde la izquierda. */
+    transform-origin: left center;
+    
+    /* Añade una transición suave para la animación de movimiento. */
+    transition: transform .3s;
+}
+.form_input:is(:focus, :not(:placeholder-shown)) +.form_text {
+    /* Este es un selector muy interesante:
+       - El selector ':is()' agrupa múltiples selectores, en este caso :focus y :not(:placeholder-shown).
+       - ':focus' selecciona el campo de entrada cuando está activo (cuando le haces clic).
+       - ':not(:placeholder-shown)' selecciona el campo de entrada cuando tiene texto.
+       - '+' selecciona el elemento .form_text que está inmediatamente después del input.
+       
+       En resumen, este selector aplica los siguientes estilos al texto flotante
+       cuando el campo de entrada está activo o cuando ya tiene contenido. */
+       
+    /* Le da un fondo blanco al texto para que no se vea el borde del input debajo. */
+    background-color: white;
+    
+    /* Aplica una transformación para mover y escalar el texto.
+       - 'translateY(-50%)' lo sube a la mitad de su altura.
+       - 'scale(.7)' lo hace más pequeño para que parezca que se eleva. */
+    transform: translateY(-50%) scale(.7);
+}
+.form_submit {
+    /* Convierte el botón en un bloque en línea para que se centre y se le aplique margen. */
+    display: inline-block;
+    
+    /* Redondea las esquinas del botón. */
+    border-radius: 10px;
+    
+    /* Establece el color de fondo. */
+    background-color: #0f41e1;
+    
+    /* Agrega relleno al botón. */
+    padding: 1rem 2rem;
+    
+    /* Define el color del texto del botón. */
+    color:white;
+    
+    /* Elimina el borde predeterminado del botón. */
+    border: none;
+    /*Separa el boton del texto */
+    margin-bottom: 20px;
+   
+}
+
+.form_submit:hover {
+    /* Cambia el color del fondo cuando el cursor pasa por encima del botón. */
+    background-color: #567aea;
+    
+    /* Cambia el cursor a una mano para indicar que es un elemento en el que se puede hacer clic. */
+    cursor: pointer;
+}
+
+.fa-solid {
+    margin-right: 10px; /*Margen derecho entre el icono y el texto */
+}
