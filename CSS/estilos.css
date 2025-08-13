@@ -23,10 +23,8 @@ input {
 }
 /*Estilos comunes en los dos formularios */
 #registro-form, #login-form {
-    /* Establece el relleno interno del formulario.
-       - '3rem' es para el relleno superior e inferior.
-       - '1.5rem' es para el relleno izquierdo y derecho. */
-    padding: 3rem 1.5rem;
+    /* Establece el relleno interno del formulario.*/
+    padding: 0 1.5rem 1.5rem;
     
     /* Le da un fondo blanco al formulario. */
     background-color: white;
@@ -179,4 +177,19 @@ input {
 
 .fa-solid {
     margin-right: 10px; /*Margen derecho entre el icono y el texto */
+}
+
+.form-image-container {
+    text-align: center;
+    margin-top: 1.5rem;
+    width: 150px; /* Dale un ancho fijo al contenedor, por ejemplo, 80px */
+    height: 150px; /* Opcional: para que sea un cuadrado */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-image {
+    width: 100%; /* Ahora la imagen ocupará el 100% del ancho del contenedor de 80px */
+    height:100%; /* Ocupará el 100% de la altura del contenedor */
+    object-fit: contain; /* Esto asegura que la imagen se ajuste sin distorsionarse */
 }
