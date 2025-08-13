@@ -236,3 +236,18 @@ input {
   width: min(350px, 90%);
   border-radius: 10px;
 }
+/* Posiciona el botón en la esquina superior derecha */
+.logout-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 15px;
+    background-color: #f44336; /* Un color que llame la atención para cerrar sesión */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    display: none; /* Oculto por defecto */
+}

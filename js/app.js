@@ -21,7 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginPasswordInput = document.getElementById("login-password"); // Variables de los enlaces para cambiar de formulario
 
   const toggleLinks = document.querySelectorAll(".toggle-link"); // Variable de la alerta
-  const alertDiv = document.getElementById("alerta"); // Captura el contenedor de bienvenida y los formularios
+  const alertDiv = document.getElementById("alerta"); // Variable del botón de cerrar sesión
+  const logoutButton = document.getElementById("logout-button"); // Captura el contenedor de bienvenida y los formularios
 
   const bienvenidaContainer = document.getElementById(
     "bienvenida-container"
@@ -35,114 +36,85 @@ document.addEventListener("DOMContentLoaded", () => {
       registroForm.style.display = "block";
       loginForm.style.display = "none";
     }
-  } /***************************************************************************/ /* ESCUCHADORES DE EVENTOS */ /**************************************************************************/ // Evento para los enlaces que cambian de formulario
+  } // Nueva función para mostrar los formularios y ocultar la bienvenida
 
+  function mostrarFormularios() {
+    bienvenidaContainer.style.display = "none";
+    logoutButton.style.display = "none";
+    registroForm.style.display = "block";
+    loginForm.style.display = "none";
+  } /***************************************************************************/ /* ESCUCHADORES DE EVENTOS */ /**************************************************************************/ // Evento para los enlaces que cambian de formulario
   toggleLinks.forEach((enlace) => {
     enlace.addEventListener("click", (e) => {
       e.preventDefault();
       cambiarFormulario();
     });
-  }); /***************************************************************************/ /* REGISTRO DE USUARIO */ /**************************************************************************/ // Evento de envío del formulario de registro
-  registroForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nombre = nombreInput.value;
-    const email = emailInput.value;
-    const password = passwordInput.value;
-
-    if (nombre === "" || email === "" || password === "") {
-      alert("El campo no puede estar en blanco");
-      return;
-    } // 1. Validar si el usuario ya existe intentando iniciar sesión.
-
-    const { error: signInError } = await supabaseClient.auth.signInWithPassword(
-      {
-        email,
-        password,
-      }
-    );
-
-    if (
-      signInError &&
-      signInError.message.includes("Invalid login credentials")
-    ) {
-      // Si el error es 'credenciales inválidas', significa que el usuario no existe.
-      // Podemos proceder con el registro.
-
-      // 2. Intentar registrar al usuario.
-      const { data, error } = await supabaseClient.auth.signUp(
-        {
-          email: email,
-          password: password,
-        },
-        {
-          data: {
-            nombre: nombre,
-          },
-        }
-      );
-
-      if (error) {
-        // Manejar otros posibles errores de registro (contraseña corta, etc...).
-        console.error("Error al registrar usuario:", error.message);
-        if (error.message.includes("Password should be at least")) {
-          manejarAlerta(
-            "Error: La contraseña debe tener al menos 6 caracteres.",
-            "error"
-          );
-        } else {
-          manejarAlerta(
-            "Ocurrió un error inesperado durante el registro: " + error.message,
-            "error"
-          );
-        }
-      } else if (data.user) {
-        // Registro exitoso.
-        manejarAlerta(
-          "¡Registro exitoso! Por favor, revisa tu correo para confirmar la cuenta.",
-          "exito"
-        ); // Guardar el nombre del usuario con la función updateUser
-
-        const { data: updateData, error: updateError } =
-          await supabaseClient.auth.updateUser({
-            data: {
-              nombre: nombre,
-            },
-          });
-
-        if (updateError) {
-          console.error(
-            "Error al actualizar metadatos del usuario:",
-            updateError
-          ); // Si hay un error al actualizar, mostramos la bienvenida sin el nombre
-          mostrarBienvenida("usuario");
-        } else {
-          // Si la actualización es exitosa, ahora sí podemos mostrar la bienvenida con el nombre
-          console.log(
-            "Metadatos de usuario actualizados correctamente:",
-            updateData
-          );
-          mostrarBienvenida(nombre);
-        }
-      }
-    } else if (signInError === null) {
-      // Si no hubo error en el inicio de sesión, el usuario ya existe.
-      manejarAlerta(
-        "Error: El correo electrónico ya está registrado.",
-        "error"
-      );
+  }); // Evento para cerrar sesión
+  logoutButton.addEventListener("click", async () => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+      console.error("Error al cerrar sesión:", error);
+      manejarAlerta("Error al cerrar sesión.", "error");
     } else {
-      // Manejar otros posibles errores en la validación inicial.
-      manejarAlerta(
-        "Ocurrió un error inesperado al verificar el usuario.",
-        "error"
-      );
+      manejarAlerta("Sesión cerrada correctamente.", "exito");
+      mostrarFormularios();
     }
-  }); /************************************************************************** */ /* FORMULARIO DE LOGIN */ /************************************************************************* */
+  }); /***************************************************************************/ /* REGISTRO DE USUARIO (SOLO Llama a signUp) */ /**************************************************************************/ // Evento de envío del formulario de registro
+
+registroForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = nombreInput.value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
+
+    if (nombre === "" || email === "" || password === "") {
+        alert("El campo no puede estar en blanco");
+        return;
+    }
+
+    // Paso 1: Intentamos registrar al usuario sin metadatos
+    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+    });
+
+    if (signUpError) {
+        console.error("Error al registrar usuario:", signUpError.message);
+        if (signUpError.message.includes("Password should be at least")) {
+            manejarAlerta("Error: La contraseña debe tener al menos 6 caracteres.", "error");
+        } else if (signUpError.message.includes("User already registered")) {
+            manejarAlerta("Error: El correo electrónico ya está registrado.", "error");
+        } else {
+            manejarAlerta("Ocurrió un error inesperado durante el registro: " + signUpError.message, "error");
+        }
+    } else if (signUpData.user) {
+        console.log("Usuario registrado con éxito:", signUpData.user);
+        
+        // Paso 2: Si el registro fue exitoso, actualizamos los metadatos con el nombre
+        const { data: updateData, error: updateError } = await supabaseClient.auth.updateUser({
+            data: {
+                nombre: nombre,
+            },
+        });
+
+        if (updateError) {
+            console.error("Error al actualizar metadatos del usuario:", updateError);
+            // Si falla la actualización, mostramos la bienvenida sin el nombre
+            manejarAlerta("¡Registro exitoso! Pero no se pudo guardar tu nombre. Por favor, revisa tu correo.", "exito");
+            mostrarBienvenida("usuario");
+        } else {
+            console.log("Metadatos de usuario actualizados correctamente:", updateData);
+            manejarAlerta("¡Registro exitoso! Por favor, revisa tu correo para confirmar la cuenta.", "exito");
+            mostrarBienvenida(nombre);
+        }
+    }
+});
+  /************************************************************************** */ /* FORMULARIO DE LOGIN (SOLO Llama a signIn) */ /************************************************************************* */
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = loginEmailInput.value;
-    const password = loginPasswordInput.value; // Validación básica del formulario
+    const password = loginPasswordInput.value;
 
     if (email === "" || password === "") {
       manejarAlerta(
@@ -166,29 +138,31 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (data.user) {
       console.log("Inicio de sesión exitoso:", data.user);
       manejarAlerta("¡Bienvenido de nuevo!", "exito");
-      const nombreUsuario = data.user.user_metadata.nombre;
-      mostrarBienvenida(nombreUsuario);
+      const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
+
+      if (userError) {
+        console.error("Error al obtener datos del usuario:", userError);
+        mostrarBienvenida("usuario");
+      } else {
+        const nombreUsuario = userData.user.user_metadata.nombre;
+        mostrarBienvenida(nombreUsuario);
+      }
     }
   }); /************************************************************************** */ /* ALERTAS DINAMICAS */ /************************************************************************* */
 
   function manejarAlerta(mensaje, tipo) {
-    // 1. Limpiar clases previas y añadir el tipo de alerta
-    alertDiv.className = "alerta mostrar " + tipo; // 2. Insertar el mensaje
-
-    alertDiv.innerHTML = mensaje; // 3. Ocultar la alerta después de 3 segundos
-
+    alertDiv.className = "alerta mostrar " + tipo;
+    alertDiv.innerHTML = mensaje;
     setTimeout(() => {
       alertDiv.className = "alerta";
     }, 3000);
   }
-
   function mostrarBienvenida(nombre) {
-    // 1. Oculta los formularios (registro y login)
     registroForm.style.display = "none";
-    loginForm.style.display = "none"; // 2. Muestra la pantalla de bienvenida
-
-    bienvenidaContainer.style.display = "block"; // 3. Inserta el nombre del usuario en el mensaje de bienvenida
-
+    loginForm.style.display = "none";
+    bienvenidaContainer.style.display = "block";
+    logoutButton.style.display = "block";
     document.getElementById("nombre-usuario").textContent = nombre;
   }
 });
