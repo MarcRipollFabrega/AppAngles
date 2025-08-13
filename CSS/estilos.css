@@ -1,4 +1,4 @@
-/*RESET*/
+/*?RESET*/
 *,::after, ::before {
     margin: 0;
     box-sizing: border-box;
@@ -21,7 +21,9 @@ body {
 input {
     font: inherit; /*Heredan la fuente*/
 }
-/*Estilos comunes en los dos formularios */
+/*****************************************************************************/
+/*?FORMULARIOS REGISTRO Y LOGIN*/
+/*****************************************************************************/
 #registro-form, #login-form {
     /* Establece el relleno interno del formulario.*/
     padding: 0 1.5rem 1.5rem;
@@ -192,4 +194,45 @@ input {
     width: 100%; /* Ahora la imagen ocupará el 100% del ancho del contenedor de 80px */
     height:100%; /* Ocupará el 100% de la altura del contenedor */
     object-fit: contain; /* Esto asegura que la imagen se ajuste sin distorsionarse */
+}
+/*****************************************************************************/
+/*?ALERTAS*/
+/*****************************************************************************/
+#alerta {
+    display: none; /* La alerta está oculta por defecto */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.5s ease-in-out; /* Transición suave */
+    opacity: 0;
+}
+
+#alerta.mostrar {
+    display: block;
+    opacity: 1;
+}
+
+#alerta.exito {
+    background-color: #4CAF50; /* Verde para éxito */
+}
+
+#alerta.error {
+    background-color: #f44336; /* Rojo para error */
+}
+/*****************************************************************************/
+/*?PANTALLA BIENVENIDA*/
+/*****************************************************************************/
+#bienvenida-container {
+  display: none; /* Oculta la pantalla de bienvenida por defecto */
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background-color: white;
+  width: min(350px, 90%);
+  border-radius: 10px;
 }
