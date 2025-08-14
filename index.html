@@ -22,105 +22,58 @@
     <link rel="stylesheet" href="css/estilos.css" />
   </head>
   <body>
-    <!--?FORMULARIO DE REGISTRO-->
-    <form id="registro-form">
-      <div class="form-image-container">
-        <img
-          src="img/logo.png"
-          alt="Descripción de la imagen"
-          class="form-image"
-        />
+    <div id="auth-container">
+      <form id="registro-form" class="main-container">
+        <div class="form-image-container">
+          <img src="img/logo.png" alt="Descripción de la imagen" class="form-image"/>
+        </div>
+        <h2 class="form_title">REGISTRO</h2>
+        <div class="form_inputs">
+          <label class="form_label">
+            <input type="email" id="email" placeholder=" " required class="form_input"/>
+            <span class="form_text"><i class="fa-solid fa-envelope"></i>Ingresa tu correo</span>
+          </label>
+          <label class="form_label">
+            <input type="password" id="password" placeholder=" " required class="form_input"/>
+            <span class="form_text">
+              <i class="fa-solid fa-key"></i>Ingresa tu contraseña</span>
+          </label>
+        </div>
+        <input type="submit" value="REGISTRO" class="form_submit" />
+        <p>
+          ¿Ya estás registrado?
+          <a class="toggle-link" href="#">Iniciar Sessión</a>
+        </p>
+      </form>
+      <form id="login-form" class="main-container">
+        <div class="form-image-container">
+          <img src="img/logo.png" alt="Descripción de la imagen" class="form-image"/>
+        </div>
+        <h2 class="form_title">INICIÓ DE SESIÓN</h2>
+        <div class="form_inputs">
+          <label class="form_label">
+            <input type="email" id="login-email" placeholder=" " class="form_input"/>
+            <span class="form_text"
+              ><i class="fa-solid fa-envelope"></i>Ingresa tu correo</span
+            >
+          </label>
+          <label class="form_label">
+            <input type="password" id="login-password" placeholder=" " class="form_input"/>
+            <span class="form_text"
+              ><i class="fa-solid fa-key"></i>Ingresa tu contraseña</span
+            >
+          </label>
+        </div>
+        <input type="submit" value="INICIAR" class="form_submit" />
+        <p>¿No estás registrado? <a class="toggle-link" href="#">Registro</a></p>
+      </form>
+      <div id="bienvenida-container" class="main-container">
+        <h1>¡Bienvenido, <span id="nombre-usuario"></span>!</h1>
       </div>
-      <h2 class="form_title">REGISTRO</h2>
-      <div class="form_inputs">
-        <label class="form_label">
-          <input
-            type="text"
-            id="nombre"
-            placeholder=" "
-            required
-            class="form_input"
-          />
-          <span class="form_text"
-            ><i class="fa-solid fa-user"></i> Ingresa tu nombre</span
-          >
-        </label>
-        <label class="form_label">
-          <input
-            type="email"
-            id="email"
-            placeholder=" "
-            required
-            class="form_input"
-          />
-          <span class="form_text"
-            ><i class="fa-solid fa-envelope"></i>Ingresa tu correo</span
-          >
-        </label>
-        <label class="form_label">
-          <input
-            type="password"
-            id="password"
-            placeholder=" "
-            required
-            class="form_input"
-          />
-          <span class="form_text">
-            <i class="fa-solid fa-key"></i>Ingresa tu contraseña</span
-          >
-        </label>
-      </div>
-      <input type="submit" value="REGISTRO" class="form_submit" />
-      <p>
-        ¿Ya estás registrado?
-        <a class="toggle-link" href="#">Iniciar Sessión</a>
-      </p>
-    </form>
-    <!--?FORMULARIO DE LOGIN-->
-    <form id="login-form">
-      <div class="form-image-container">
-        <img
-          src="img/logo.png"
-          alt="Descripción de la imagen"
-          class="form-image"
-        />
-      </div>
-      <h2 class="form_title">INICIÓ DE SESIÓN</h2>
-      <div class="form_inputs">
-        <label class="form_label">
-          <input
-            type="email"
-            id="login-email"
-            placeholder=" "
-            class="form_input"
-          />
-          <span class="form_text"
-            ><i class="fa-solid fa-envelope"></i>Ingresa tu correo</span
-          >
-        </label>
-        <label class="form_label">
-          <input
-            type="password"
-            id="login-password"
-            placeholder=" "
-            class="form_input"
-          />
-          <span class="form_text"
-            ><i class="fa-solid fa-key"></i>Ingresa tu contraseña</span
-          >
-        </label>
-      </div>
-      <input type="submit" value="INICIAR" class="form_submit" />
-      <p>¿No estás registrado? <a class="toggle-link" href="#">Registro</a></p>
-    </form>
-    <!--?DIV ALERTAS-->
-    <div id="alerta"><p>alerta</p></div>
-    <!--?PANTALLA DE BIENVENIDA-->
-    <div id="bienvenida-container" class="bienvenida-container">
-      <h1>¡Bienvenido, <span id="nombre-usuario"></span>!</h1>
-      <button id="logout-button" class="logout-button">Cerrar Sesión</button>
     </div>
-
+    <div id="alerta"><p>alerta</p></div>
+    <button id="logout-button" class="logout-button">Cerrar Sesión</button>
+    
     <script src="js/app.js"></script>
   </body>
 </html>
