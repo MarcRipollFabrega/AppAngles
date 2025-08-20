@@ -1,205 +1,225 @@
 /*?RESET*/
-*,::after, ::before {
-    margin: 0;
-    box-sizing: border-box;
+*,
+::after,
+::before {
+  margin: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: "Gentium Book Plus", serif;
-    height: 100vh;
-    background-image:url(/img/fondo.jpg);
-    background-repeat: no-repeat;
-    background-size: cover;
+  font-family: "Gentium Book Plus", serif;
+  height: 100vh;
+  background-image: url(/img/fondo.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 input {
-    font: inherit;
+  font: inherit;
 }
 
 /*?CONTENEDOR PRINCIPAL PARA CENTRAR TODO EL CONTENIDO*/
 #auth-container {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /*?ESTILOS REUTILIZABLES PARA FORMULARIOS Y PANTALLA BIENVENIDA*/
 .main-container {
-    padding: 0 1.5rem 1.5rem;
-    background-color: white;
-    width: min(350px, 90%);
-    border-radius: 10px;
-    text-align: center;
+  padding: 0 1.5rem 1.5rem;
+  background-color: white;
+  width: min(350px, 90%);
+  border-radius: 10px;
+  text-align: center;
 }
 
 /*****************************************************************************/
 /*?FORMULARIOS REGISTRO Y LOGIN*/
 /*****************************************************************************/
-
+#registro-form {
+  display: none;
+}
 .form_title {
-    font-size: 2rem;
-    text-shadow: 2px 2px 4px #686666;
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px #686666;
 }
 
 .form_inputs {
-    margin: 2rem 0 1.5rem;
-    display:grid;
-    gap: 1.5rem;
-    color:#6b6b6b;
+  margin: 2rem 0 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+  color: #6b6b6b;
 }
 
 .form_label {
-    width:100%;
-    display: grid;
-    grid-template-areas: "input";
+  width: 100%;
+  display: grid;
+  grid-template-areas: "input";
 }
 
 .form_input {
-    grid-area: input;
-    width: 100%;
-    border-radius: 10px;
-    border: 1px solid #d7d0d0;
-    padding: .7rem 1.5rem;
+  grid-area: input;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #d7d0d0;
+  padding: 0.7rem 1.5rem;
 }
 
 .form_text {
-    grid-area: input;
-    z-index:100;
-    width: max-content;
-    height: 100%;
-    margin-left: 1rem;
-    padding: 0 .5rem;
-    display: flex;
-    align-items: center;
-    transform-origin: left center;
-    transition: transform .3s;
+  grid-area: input;
+  z-index: 100;
+  width: max-content;
+  height: 100%;
+  margin-left: 1rem;
+  padding: 0 0.5rem;
+  display: flex;
+  align-items: center;
+  transform-origin: left center;
+  transition: transform 0.3s;
 }
 
-.form_input:is(:focus, :not(:placeholder-shown)) +.form_text {
-    background-color: white;
-    transform: translateY(-50%) scale(.7);
+.form_input:is(:focus, :not(:placeholder-shown)) + .form_text {
+  background-color: white;
+  transform: translateY(-50%) scale(0.7);
 }
 
 .form_submit {
-    display: inline-block;
-    border-radius: 10px;
-    background-color: #0f41e1;
-    padding: 1rem 2rem;
-    color:white;
-    border: none;
-    margin-bottom: 20px;
+  display: inline-block;
+  border-radius: 10px;
+  background-color: #0f41e1;
+  padding: 1rem 2rem;
+  color: white;
+  border: none;
+  margin-bottom: 20px;
 }
 
 .form_submit:hover {
-    background-color: #567aea;
-    cursor: pointer;
+  background-color: #567aea;
+  cursor: pointer;
 }
 
 .fa-solid {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 .form-image-container {
-    text-align: center;
-    margin-top: 1.5rem;
-    width: 150px;
-    height: 150px;
-    margin-left: auto;
-    margin-right: auto;
+  text-align: center;
+  margin-top: 1.5rem;
+  width: 150px;
+  height: 150px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .form-image {
-    width: 100%;
-    height:100%;
-    object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /*****************************************************************************/
 /*?ALERTAS*/
 /*****************************************************************************/
 #alerta {
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    padding: 15px 25px;
-    border-radius: 8px;
-    color: white;
-    font-size: 1rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: opacity 0.5s ease-in-out;
-    opacity: 0;
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 15px 25px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0;
 }
 
 #alerta.mostrar {
-    display: block;
-    opacity: 1;
+  display: block;
+  opacity: 1;
 }
 
 #alerta.exito {
-    background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 #alerta.error {
-    background-color: #f44336;
+  background-color: #f44336;
 }
 
-/*****************************************************************************/
-/*?PANTALLA BIENVENIDA*/
-/*****************************************************************************/
-#bienvenida-container {
-    display: none;
-}
-
-.logout-button {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    padding: 10px 15px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-
-}
 /**************************************************************************/
 /*?ESTILOS DEL MENÚ SUPERIOR */
 /*************************************************************************/
 .top-menu {
-    width: 100%;
-    background-color: white;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: fixed; /* Mantiene el menú en la parte superior */
-    top: 0;
-    left: 0;
-    z-index: 100;
-    
+  width: 100%;
+  background-color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed; /* Mantiene el menú en la parte superior */
+  top: 0;
+  left: 0;
+  z-index: 100;
 }
 
 .menu-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .menu-logo {
-    width: 40px;
-    height: 40px;
+  width: 40px;
+  height: 40px;
 }
 
 .app-name {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #0f41e1;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0f41e1;
+}
+.menu-right {
+  display: flex; /* Añadido para alinear los botones */
+  gap: 10px; /* Espacio entre los botones */
 }
 
+/* Estilos para todos los botones del menú */
+.menu-button,
+.logout-button {
+  padding: 10px 15px;
+  color: white; /* Letra blanca */
+  font-weight: bold; /* Letra en negrita */
+  border: none; /* Quitamos el borde negro */
+  border-radius: 5px; /* Bordes redondeados */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  transition: transform 0.3s ease;
+  display: none; /* Ocultos por defecto, los mostraremos con JS */
+}
+
+.logout-button {
+  background-color: #f44336;
+}
+.logout-button:hover {
+  background-color: #d32f2f;
+  border-radius: 5px;
+  transform: scale(1.1);
+}
+.menu-button {
+  background-color: #0f41e1;
+}
+.menu-button:hover {
+  background-color: #567aea;
+  border-radius: 5px;
+  transform: scale(1.1);
+}
+
+.fa-solid {
+  margin-left: 10px;
+}
 

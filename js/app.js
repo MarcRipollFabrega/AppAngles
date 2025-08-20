@@ -6,28 +6,28 @@ const supabaseAnonKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnl6c2xnYmF4cGljZmprbHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2NTY5NTIsImV4cCI6MjA3MDIzMjk1Mn0.VjqrlFp_MfilwuTw4OSAdK3aEIwfXB2bdq6GLoJREoo";
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   /***************************************************************************/
   /* VARIABLES DE LOS ELEMENTOS HTML */
   /***************************************************************************/
   const authContainer = document.getElementById("auth-container");
   const registroForm = document.getElementById("registro-form");
   const loginForm = document.getElementById("login-form");
-  const bienvenidaContainer = document.getElementById("bienvenida-container");
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const loginEmailInput = document.getElementById("login-email");
   const loginPasswordInput = document.getElementById("login-password");
 
-  const nombreUsuarioSpan = document.getElementById("nombre-usuario");
   const toggleLinks = document.querySelectorAll(".toggle-link");
   const logoutButton = document.getElementById("logout-button");
-   const topmenu = document.getElementById("top-menu");
+  const perfilButtons = document.getElementById("perfil-button");
   const alertDiv = document.getElementById("alerta");
 
+  let userSession = null;
+
   /***************************************************************************/
-  /* FUNCIÓN PARA MANEJAR LA INTERFAZ */
+  /* FUNCIÓN PARA MANEJAR LA INTERFAZ Y ALERTAS */
   /***************************************************************************/
 
   /** Muestra una alerta dinámica. */
@@ -42,37 +42,37 @@ document.addEventListener("DOMContentLoaded", () => {
   /** Oculta todos los contenedores principales y muestra solo el especificado. */
   function mostrarContenedor(id) {
     authContainer.style.display = "none";
-    bienvenidaContainer.style.display = "none";
+
+    // Oculta todos los botones del menú
     logoutButton.style.display = "none";
-    topmenu.style.display = "none";
 
     if (id === "auth") {
       authContainer.style.display = "flex";
-      registroForm.style.display = "none";
-      loginForm.style.display = "block";
-    } else if (id === "bienvenida") {
-      bienvenidaContainer.style.display = "flex";
-      logoutButton.style.display = "block";
-      topmenu.style.display = "block";
+      // El CSS se encarga de mostrar el login por defecto.
     }
   }
 
   /***************************************************************************/
-  /* LÓGICA PRINCIPAL DE AUTENTICACIÓN */
+  /* LÓGICA DE VERIFICACIÓN DE SESIÓN */
   /***************************************************************************/
 
-  // Esta es la clave: se ejecuta cada vez que el estado de la sesión cambia.
-  supabaseClient.auth.onAuthStateChange((event, session) => {
+  // onAuthStateChange se encarga de todo
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    userSession = session;
     console.log("Estado de autenticación:", event, session);
+
     if (session) {
-      // Si hay una sesión activa, el usuario está logueado.
-      const nombreUsuario =
-        session.user.user_metadata.nombre || session.user.email;
-      nombreUsuarioSpan.textContent = nombreUsuario;
-      mostrarContenedor("bienvenida");
+      // Si hay una sesión activa, ocultamos los formularios de autenticación
+      authContainer.style.display = "none";
+      // Y mostramos el botón de cerrar sesión
+      logoutButton.style.display = "block";
+      perfilButtons.style.display = "block";
     } else {
-      // Si no hay sesión, muestra los formularios de autenticación.
-      mostrarContenedor("auth");
+      // Si no hay sesión, mostramos los formularios de autenticación
+      authContainer.style.display = "flex";
+      // Y ocultamos el botón de cerrar sesión
+      logoutButton.style.display = "none";
+      perfilButtons.style.display = "none";
     }
   });
 
@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (signInError) {
       manejarAlerta("Error al iniciar sesión: " + signInError.message, "error");
     } else {
-      // La función onAuthStateChange se encargará de mostrar la pantalla de bienvenida.
+      // La función onAuthStateChange se encargará del cambio de pantalla
       manejarAlerta("¡Inicio de sesión exitoso!", "exito");
     }
   });
@@ -147,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       manejarAlerta("Sesión cerrada correctamente.", "exito");
       // La función onAuthStateChange se encargará de mostrar la interfaz de auth.
+      window.location.reload(); // Recargamos para limpiar la sesión
     }
   });
 
