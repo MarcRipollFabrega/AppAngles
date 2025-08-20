@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nombreUsuarioSpan = document.getElementById("nombre-usuario");
   const toggleLinks = document.querySelectorAll(".toggle-link");
   const logoutButton = document.getElementById("logout-button");
+   const topmenu = document.getElementById("top-menu");
   const alertDiv = document.getElementById("alerta");
 
   /***************************************************************************/
@@ -43,14 +44,16 @@ document.addEventListener("DOMContentLoaded", () => {
     authContainer.style.display = "none";
     bienvenidaContainer.style.display = "none";
     logoutButton.style.display = "none";
+    topmenu.style.display = "none";
 
     if (id === "auth") {
       authContainer.style.display = "flex";
-      registroForm.style.display = "block";
-      loginForm.style.display = "none";
+      registroForm.style.display = "none";
+      loginForm.style.display = "block";
     } else if (id === "bienvenida") {
       bienvenidaContainer.style.display = "flex";
       logoutButton.style.display = "block";
+      topmenu.style.display = "block";
     }
   }
 

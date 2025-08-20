@@ -36,9 +36,6 @@ input {
 /*****************************************************************************/
 /*?FORMULARIOS REGISTRO Y LOGIN*/
 /*****************************************************************************/
-#login-form {
-    display: none;
-}
 
 .form_title {
     font-size: 2rem;
@@ -168,5 +165,41 @@ input {
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
-    display: none;
+
 }
+/**************************************************************************/
+/*?ESTILOS DEL MENÚ SUPERIOR */
+/*************************************************************************/
+.top-menu {
+    width: 100%;
+    background-color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed; /* Mantiene el menú en la parte superior */
+    top: 0;
+    left: 0;
+    z-index: 100;
+    
+}
+
+.menu-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.menu-logo {
+    width: 40px;
+    height: 40px;
+}
+
+.app-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0f41e1;
+}
+
+
