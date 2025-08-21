@@ -203,9 +203,13 @@ input {
 /* 4. ESTILOS DE FORMULARIO DE PERFIL */
 /*****************************************************************************/
 #perfil-container {
-  margin-top: 100px; /* Para que aparezca debajo del menú superior fijo */
-  margin-left: auto; /* Empuja el contenedor a la derecha */
-  margin-right: 20px; /* Añade un pequeño espacio al borde derecho */ /* Añade espacio al borde derecho */
+  position: fixed; /* Lo fija en la pantalla */
+  top: 80px; /* Posición debajo del menú superior */
+  right: 20px; /* Lo mueve a la derecha de la pantalla */
+  margin-top: 0; /* Eliminado para usar la propiedad 'top' */
+  margin-left: auto;
+  margin-right: 0;
+  width: min(450px, 90%);
 }
 #perfil-form {
     position: relative;
@@ -294,3 +298,145 @@ input {
   background-color: #f44336;
 }
 
+
+/*****************************************************************************/
+/* 6. ESTILOS DE DISEÑO DE PANTALLA DIVIDIDA */
+/*****************************************************************************/
+.split-screen-container {
+  display: flex;
+  flex: 1; /* Permet que el contenidor ocupi l'espai restant */
+  padding-top: 80px; /* Espai per sota del menú superior */
+}
+
+.main-content {
+  flex: 3; /* Ocupa 3 parts de l'espai total (per exemple, 75%) */
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.9); /* Fons semi-transparent */
+  overflow-y: auto; /* Permet desplaçament si el contingut és llarg */
+}
+
+.sidebar {
+  flex: 1; /* Ocupa 1 part de l'espai total (per exemple, 25%) */
+  background-color: rgba(240, 240, 240, 0.9); /* Fons semi-transparent */
+  padding: 2rem;
+  border-left: 1px solid #ccc;
+  overflow-y: auto; /* Permet desplaçament */
+}
+
+/* Estilos para que el quiz se vea bien dentro del main-content */
+.quiz-main-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding-top: 100px; /* Nuevo: Añadimos padding para que el contenido no quede debajo del menú */
+}
+
+/*****************************************************************************/
+/* 7. ESTILOS PARA EL CUESTIONARIO Y MÓDULOS */
+/*****************************************************************************/
+#module-selection,
+#quiz-container {
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin: 0 auto;
+}
+
+#quiz-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+#question {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+#options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.option-button {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #0f41e1;
+  border-radius: 8px;
+  background-color: white;
+  color: #0f41e1;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.option-button:hover {
+  background-color: #0f41e1;
+  color: white;
+}
+
+.option-button.correct {
+  background-color: #4caf50;
+  color: white;
+  border-color: #4caf50;
+}
+
+.option-button.incorrect {
+  background-color: #f44336;
+  color: white;
+  border-color: #f44336;
+}
+
+#next-button,
+#restart-button {
+  padding: 1rem 2rem;
+  background-color: #0f41e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1.5rem;
+}
+
+#next-button:hover,
+#restart-button:hover {
+  background-color: #567aea;
+}
+
+#feedback {
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.exit-quiz-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.exit-quiz-button:hover {
+  background-color: #d32f2f;
+}

@@ -9,7 +9,14 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 let userSession = null;
 
 /***************************************************************************/
-/* 2. VARIABLES DE LOS ELEMENTOS HTML */
+/* IMPORTEM L'ARXIU QUIZ. */
+/***************************************************************************/
+// Importem la funció 'initQuiz' del fitxer 'quiz.js'.
+// Assegura't que el fitxer 'quiz.js' estigui a la mateixa carpeta.
+import { initQuiz } from "./quiz.js";
+
+/***************************************************************************/
+/* 2. VARIABLES DELS ELEMENTS HTML */
 /***************************************************************************/
 const authContainer = document.getElementById("auth-container");
 const registroForm = document.getElementById("registro-form");
@@ -29,6 +36,9 @@ const logoutButton = document.getElementById("logout-button");
 const perfilButton = document.getElementById("perfil-button");
 const alertDiv = document.getElementById("alerta");
 const nombreUsuarioInput = document.getElementById("nombre-usuario");
+const quizSection = document.getElementById("quiz-container"); // Usamos el ID correcto: quiz-container
+const moduleSelection = document.getElementById("module-selection"); // Referencia a la pantalla de módulos
+const exitQuizButton = document.getElementById("exit-quiz-button"); // Nuevo botón de salida
 
 /***************************************************************************/
 /* 3. FUNCIONS D'UTILITAT I DADES */
@@ -76,37 +86,68 @@ async function cargarDatosPerfil() {
 /* 4. LÒGICA DE LA INTERFÍCIE D'USUARI */
 /***************************************************************************/
 document.addEventListener("DOMContentLoaded", async () => {
-  // Lògica de verificació de sessió
+  // Ocultem la secció principal del qüestionari per defecte.
+  if (quizSection) {
+    quizSection.style.display = "none";
+  }
+
+  // Assegurem que l'estat inicial dels formularis de registre i login és correcte.
+  if (registroForm && loginForm) {
+    registroForm.style.display = "block"; // Mostrem el formulari de registre per defecte
+    loginForm.style.display = "none"; // Amaguem el formulari de login
+  }
+
+  // Lògica de verificació de sessió i inicialització de la interfície.
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     userSession = session;
+    console.log("Estat d'autenticació canviat:", event, "Sessió:", session); // Ajuda per a la depuració
 
     if (session) {
+      // Usuari autenticat
       authContainer.style.display = "none";
       perfilContainer.style.display = "none";
       logoutButton.style.display = "block";
       perfilButton.style.display = "block";
+
+      // Mostrem el qüestionari només si l'element existeix.
+      if (quizSection) {
+        moduleSelection.style.display = "block";
+        quizSection.style.display = "none";
+      }
+
       cargarDatosPerfil();
+      // Inicialitzem el qüestionari amb el client de Supabase
+      initQuiz(supabaseClient);
     } else {
+      // Usuari no autenticat
       authContainer.style.display = "flex";
       perfilContainer.style.display = "none";
       logoutButton.style.display = "none";
       perfilButton.style.display = "none";
-    }
-  }); // Escoltador d'esdeveniments per canviar entre formularis
 
+      // Amaguem el qüestionari si l'element existeix.
+      if (quizSection) {
+        quizSection.style.display = "none";
+      }
+    }
+  });
+
+  // Escoltador d'esdeveniments per canviar entre formularis
   toggleLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      if (registroForm.style.display !== "none") {
-        registroForm.style.display = "none";
-        loginForm.style.display = "block";
-      } else {
+      // Lògica de canvi de formulari corregida
+      if (registroForm.style.display === "none") {
         registroForm.style.display = "block";
         loginForm.style.display = "none";
+      } else {
+        registroForm.style.display = "none";
+        loginForm.style.display = "block";
       }
     });
-  }); // Escoltador d'esdeveniments per a la previsualització de la imatge
+  });
 
+  // Escoltador d'esdeveniments per a la previsualització de la imatge
   perfilPhotoUploadInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -116,8 +157,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
       reader.readAsDataURL(file);
     }
-  }); // Escoltadors d'esdeveniments dels formularis i botons
+  });
 
+  // Escoltadors d'esdeveniments dels formularis i botons
   registroForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = emailInput.value;
@@ -167,6 +209,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (signInError) {
       manejarAlerta("Error en iniciar sessió: " + signInError.message, "error");
     } else {
+      // Afegim una alerta d'èxit per a un feedback immediat
       manejarAlerta("¡Inici de sessió exitós!", "exito");
     }
   });
@@ -177,7 +220,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       manejarAlerta("Error en tancar sessió: " + error.message, "error");
     } else {
       manejarAlerta("Sessió tancada correctament.", "exito");
-      window.location.reload();
+      // La funció onAuthStateChange ja gestionarà l'estat, no cal recarregar.
     }
   });
 
@@ -260,4 +303,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
   });
+
+  // === AÑADIMOS LA FUNCIONALIDAD DEL BOTÓN "SALIR DEL CUESTIONARIO" ===
+  // Esto asegura que la lógica se añada solo si el botón existe.
+  if (exitQuizButton) {
+    exitQuizButton.addEventListener("click", () => {
+      // Oculta el contenedor del cuestionario
+      quizSection.style.display = "none";
+      // Muestra el contenedor de selección de módulos
+      moduleSelection.style.display = "block";
+    });
+  }
 });
