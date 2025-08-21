@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const logoutButton = document.getElementById("logout-button");
   const perfilButton = document.getElementById("perfil-button");
   const alertDiv = document.getElementById("alerta");
+  const nombreUsuarioInput = document.getElementById("nombre-usuario");
 
   let userSession = null;
 
@@ -51,12 +52,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const { data: perfil, error } = await supabaseClient
       .from("perfiles")
-      .select("nombre_completo, foto_url")
+      .select("nombre_completo, foto_url, nombre_usuario")
       .eq("id", userSession.user.id)
       .single();
 
     if (perfil) {
       nombreCompletoInput.value = perfil.nombre_completo || "";
+      nombreUsuarioInput.value = perfil.nombre_usuario ||"";
       if (perfil.foto_url) {
         perfilPhotoPreview.src = perfil.foto_url;
       } else {
@@ -65,6 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     } else {
       nombreCompletoInput.value = "";
+      nombreUsuarioInput.value = "";
       perfilPhotoPreview.src = "img/silueta.jpg";
     }
     if (error && error.code !== "PGRST116") {
@@ -195,6 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   perfilForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const nombre = nombreCompletoInput.value;
+    const nombreUsuario = nombreUsuarioInput.value;
     const fotoFile = perfilPhotoUploadInput.files[0];
     let fotoUrl = null;
 
@@ -233,6 +237,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const updates = {
         nombre_completo: nombre,
+        nombre_usuario: nombreUsuario,
         actualizado_en: new Date().toISOString(),
       };
 
