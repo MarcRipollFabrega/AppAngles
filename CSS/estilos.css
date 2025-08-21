@@ -8,10 +8,12 @@
 
 body {
   font-family: "Gentium Book Plus", serif;
-  height: 100vh;
+  min-height: 100vh;
   background-image: url(/img/fondo.jpg);
   background-repeat: no-repeat;
   background-size: cover;
+  display: flex;
+  flex-direction: column;
 }
 
 input {
@@ -20,19 +22,22 @@ input {
 
 /*?CONTENEDOR PRINCIPAL PARA CENTRAR TODO EL CONTENIDO*/
 #auth-container {
-  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100vh;
 }
 
-/*?ESTILOS REUTILIZABLES PARA FORMULARIOS Y PANTALLA BIENVENIDA*/
 .main-container {
-  padding: 0 1.5rem 1.5rem;
+  padding: 2rem;
   background-color: white;
-  width: min(350px, 90%);
+  width: min(450px, 90%);
   border-radius: 10px;
   text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /*****************************************************************************/
@@ -223,3 +228,66 @@ input {
   margin-left: 10px;
 }
 
+/*? ESTILOS DEL FORMULARIO DE PERFIL */
+
+#perfil-container {
+  margin-top: 100px; /* Para que aparezca debajo del menú superior fijo */
+  margin-left: auto; /* Empuja el contenedor a la derecha */
+  margin-right: 20px; /* Añade un pequeño espacio al borde derecho */ /* Añade espacio al borde derecho */
+}
+.perfil-photo-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 2rem;
+}
+
+.perfil-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0f41e1;
+}
+
+.photo-upload-label {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 40px;
+  height: 40px;
+  background-color: #0f41e1;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-in-out;
+}
+
+.photo-upload-label:hover {
+  transform: scale(1.1);
+}
+
+/*? ESTILOS DEL BOTÓN DE CERRAR EN EL FORMULARIO */
+#perfil-form {
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover {
+    color: #f44336;
+}

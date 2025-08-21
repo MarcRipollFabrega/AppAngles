@@ -124,6 +124,44 @@
       </form>
     </div>
 
+
+    <!-- FORMULARIO DE PERFIL-->
+
+    <div id="perfil-container" class="main-container" style="display: none;">
+<form id="perfil-form" class="main-container">
+    <button type="button" id="close-perfil-button" class="close-button">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    <h2 class="form_title">Tu Perfil</h2>
+    <div class="perfil-photo-container">
+      <img
+        id="perfil-photo-preview"
+        src="img/silueta.jpg"
+        alt="Foto de perfil"
+        class="perfil-photo"
+      />
+      <label for="perfil-photo-upload" class="photo-upload-label">
+        <i class="fa-solid fa-camera"></i>
+      </label>
+      <input type="file" id="perfil-photo-upload" accept="image/*" style="display: none;" />
+    </div>
+    <div class="form_inputs">
+      <label class="form_label">
+        <input
+          id="nombre-completo"
+          class="form_input"
+          type="text"
+          placeholder=" "
+          autocomplete="name"
+          required
+        />
+        <span class="form_text">Nombre de Usuario</span>
+      </label>
+    </div>
+    <button type="submit" class="form_submit">Guardar Cambios</button>
+</form>
+</div>
+
     <div id="alerta"><p>alerta</p></div>
 
     <script src="js/app.js"></script>

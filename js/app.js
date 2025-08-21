@@ -1,9 +1,9 @@
 /***************************************************************************/
 /* CONEXIÓN SUPABASE */
 /***************************************************************************/
-const supabaseUrl = "https://udvyzslgbaxpicfjklvn.supabase.co";
+const supabaseUrl = "https://oysmuvizufqdwpujqnpy.supabase.co";
 const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnl6c2xnYmF4cGljZmprbHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2NTY5NTIsImV4cCI6MjA3MDIzMjk1Mn0.VjqrlFp_MfilwuTw4OSAdK3aEIwfXB2bdq6GLoJREoo";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95c211dml6dWZxZHdwdWpxbnB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU3NjkxNzUsImV4cCI6MjA3MTM0NTE3NX0.vNkfRJuqFH5ahPnx0sRJURokZntlCXsDIp5uwpP8Crk";
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -13,6 +13,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authContainer = document.getElementById("auth-container");
   const registroForm = document.getElementById("registro-form");
   const loginForm = document.getElementById("login-form");
+  const perfilContainer = document.getElementById("perfil-container");
+  const closePerfilButton = document.getElementById("close-perfil-button");
+  const perfilForm = document.getElementById("perfil-form");
+  const nombreCompletoInput = document.getElementById("nombre-completo");
+  const perfilPhotoUploadInput = document.getElementById("perfil-photo-upload");
+  const perfilPhotoPreview = document.getElementById("perfil-photo-preview");
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -21,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const toggleLinks = document.querySelectorAll(".toggle-link");
   const logoutButton = document.getElementById("logout-button");
-  const perfilButtons = document.getElementById("perfil-button");
+  const perfilButton = document.getElementById("perfil-button");
   const alertDiv = document.getElementById("alerta");
 
   let userSession = null;
@@ -39,16 +45,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 3000);
   }
 
-  /** Oculta todos los contenedores principales y muestra solo el especificado. */
-  function mostrarContenedor(id) {
-    authContainer.style.display = "none";
+  /** Carga los datos del perfil del usuario en el formulario. */
+  async function cargarDatosPerfil() {
+    if (!userSession) return;
 
-    // Oculta todos los botones del menú
-    logoutButton.style.display = "none";
+    const { data: perfil, error } = await supabaseClient
+      .from("perfiles")
+      .select("nombre_completo, foto_url")
+      .eq("id", userSession.user.id)
+      .single();
 
-    if (id === "auth") {
-      authContainer.style.display = "flex";
-      // El CSS se encarga de mostrar el login por defecto.
+    if (perfil) {
+      nombreCompletoInput.value = perfil.nombre_completo || "";
+      if (perfil.foto_url) {
+        perfilPhotoPreview.src = perfil.foto_url;
+      } else {
+        perfilPhotoPreview.src =
+          "https://udvyzslgbaxpicfjklvn.supabase.co/storage/v1/object/public/perfiles/silueta.jpg";
+      }
+    } else {
+      nombreCompletoInput.value = "";
+      perfilPhotoPreview.src = "img/silueta.jpg";
+    }
+    if (error && error.code !== "PGRST116") {
+      console.error("Error al cargar perfil:", error);
     }
   }
 
@@ -56,23 +76,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* LÓGICA DE VERIFICACIÓN DE SESIÓN */
   /***************************************************************************/
 
-  // onAuthStateChange se encarga de todo
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     userSession = session;
-    console.log("Estado de autenticación:", event, session);
+    //console.log("Estado de autenticación:", event, session);
 
     if (session) {
-      // Si hay una sesión activa, ocultamos los formularios de autenticación
       authContainer.style.display = "none";
-      // Y mostramos el botón de cerrar sesión
+      perfilContainer.style.display = "none";
       logoutButton.style.display = "block";
-      perfilButtons.style.display = "block";
+      perfilButton.style.display = "block";
+      cargarDatosPerfil();
     } else {
-      // Si no hay sesión, mostramos los formularios de autenticación
       authContainer.style.display = "flex";
-      // Y ocultamos el botón de cerrar sesión
+      perfilContainer.style.display = "none";
       logoutButton.style.display = "none";
-      perfilButtons.style.display = "none";
+      perfilButton.style.display = "none";
     }
   });
 
@@ -134,7 +152,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (signInError) {
       manejarAlerta("Error al iniciar sesión: " + signInError.message, "error");
     } else {
-      // La función onAuthStateChange se encargará del cambio de pantalla
       manejarAlerta("¡Inicio de sesión exitoso!", "exito");
     }
   });
@@ -146,8 +163,106 @@ document.addEventListener("DOMContentLoaded", async () => {
       manejarAlerta("Error al cerrar sesión: " + error.message, "error");
     } else {
       manejarAlerta("Sesión cerrada correctamente.", "exito");
-      // La función onAuthStateChange se encargará de mostrar la interfaz de auth.
-      window.location.reload(); // Recargamos para limpiar la sesión
+       window.location.reload();
+    }
+  });
+
+  // Evento para mostrar el formulario de perfil
+  perfilButton.addEventListener("click", () => {
+    authContainer.style.display = "none";
+    perfilContainer.style.display = "flex";
+    cargarDatosPerfil();
+  });
+
+  // Evento para cerrar el formulario de perfil
+  closePerfilButton.addEventListener("click", () => {
+    perfilContainer.style.display = "none";
+  });
+
+  // Evento para previsualizar la imagen de perfil seleccionada
+  perfilPhotoUploadInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        perfilPhotoPreview.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Evento para guardar el perfil
+  perfilForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = nombreCompletoInput.value;
+    const fotoFile = perfilPhotoUploadInput.files[0];
+    let fotoUrl = null;
+
+    if (userSession) {
+      if (fotoFile) {
+        const fileExt = "jpg"; // Forzamos la extensión a .jpg
+        const fileName = `avatar.${fileExt}`; // Nombre de archivo consistente
+        const filePath = `avatares/${userSession.user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from("perfiles")
+          .upload(filePath, fotoFile, {
+            cacheControl: "60",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          manejarAlerta(
+            "Error al subir la imagen: " + uploadError.message,
+            "error"
+          );
+          return;
+        }
+
+        const { data: publicUrlData } = supabaseClient.storage
+          .from("perfiles")
+          .getPublicUrl(filePath);
+
+        fotoUrl = publicUrlData.publicUrl;
+      }
+
+      const { data: perfilExistente } = await supabaseClient
+        .from("perfiles")
+        .select("id")
+        .eq("id", userSession.user.id);
+
+      const updates = {
+        nombre_completo: nombre,
+        actualizado_en: new Date().toISOString(),
+      };
+
+      if (fotoUrl) {
+        updates.foto_url = fotoUrl;
+      }
+
+      // ✅ Lógica de actualización e inserción corregida
+      let error = null;
+      if (perfilExistente && perfilExistente.length > 0) {
+        const { error: updateError } = await supabaseClient
+          .from("perfiles")
+          .update(updates)
+          .eq("id", userSession.user.id);
+        error = updateError;
+      } else {
+        updates.id = userSession.user.id;
+        const { error: insertError } = await supabaseClient
+          .from("perfiles")
+          .insert([updates]);
+        error = insertError;
+      }
+
+      if (error) {
+        manejarAlerta("Error al guardar el perfil: " + error.message, "error");
+      } else {
+        manejarAlerta("Perfil guardado con éxito.", "exito");
+        perfilContainer.style.display = "none";
+
+      }
     }
   });
 
@@ -155,7 +270,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   toggleLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      // Oculta un formulario y muestra el otro.
       if (registroForm.style.display !== "none") {
         registroForm.style.display = "none";
         loginForm.style.display = "block";
