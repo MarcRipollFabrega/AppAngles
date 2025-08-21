@@ -1,4 +1,6 @@
-/*?RESET*/
+/*****************************************************************************/
+/* 1. ESTILOS GENERALES Y RESET */
+/*****************************************************************************/
 *,
 ::after,
 ::before {
@@ -41,7 +43,80 @@ input {
 }
 
 /*****************************************************************************/
-/*?FORMULARIOS REGISTRO Y LOGIN*/
+/* 2. ESTILOS DE NAVEGACIÓN (TOP-MENU) */
+/*****************************************************************************/
+.top-menu {
+  width: 100%;
+  background-color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed; /* Mantiene el menú en la parte superior */
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.menu-logo {
+  width: 40px;
+  height: 40px;
+}
+
+.app-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0f41e1;
+}
+.menu-right {
+  display: flex; /* Añadido para alinear los botones */
+  gap: 10px; /* Espacio entre los botones */
+}
+
+/* Estilos para todos los botones del menú */
+.menu-button,
+.logout-button {
+  padding: 10px 15px;
+  color: white; /* Letra blanca */
+  font-weight: bold; /* Letra en negrita */
+  border: none; /* Quitamos el borde negro */
+  border-radius: 5px; /* Bordes redondeados */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  transition: transform 0.3s ease;
+  display: none; /* Ocultos por defecto, los mostraremos con JS */
+}
+
+.logout-button {
+  background-color: #f44336;
+}
+.logout-button:hover {
+  background-color: #d32f2f;
+  border-radius: 5px;
+  transform: scale(1.1);
+}
+.menu-button {
+  background-color: #0f41e1;
+}
+.menu-button:hover {
+  background-color: #567aea;
+  border-radius: 5px;
+  transform: scale(1.1);
+}
+
+.fa-solid {
+  margin-left: 10px;
+}
+
+/*****************************************************************************/
+/* 3. ESTILOS DE FORMULARIOS DE AUTENTICACIÓN */
 /*****************************************************************************/
 #registro-form {
   display: none;
@@ -125,116 +200,34 @@ input {
 }
 
 /*****************************************************************************/
-/*?ALERTAS*/
+/* 4. ESTILOS DE FORMULARIO DE PERFIL */
 /*****************************************************************************/
-#alerta {
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  padding: 15px 25px;
-  border-radius: 8px;
-  color: white;
-  font-size: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.5s ease-in-out;
-  opacity: 0;
-}
-
-#alerta.mostrar {
-  display: block;
-  opacity: 1;
-}
-
-#alerta.exito {
-  background-color: #4caf50;
-}
-
-#alerta.error {
-  background-color: #f44336;
-}
-
-/**************************************************************************/
-/*?ESTILOS DEL MENÚ SUPERIOR */
-/*************************************************************************/
-.top-menu {
-  width: 100%;
-  background-color: white;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: fixed; /* Mantiene el menú en la parte superior */
-  top: 0;
-  left: 0;
-  z-index: 100;
-}
-
-.menu-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.menu-logo {
-  width: 40px;
-  height: 40px;
-}
-
-.app-name {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #0f41e1;
-}
-.menu-right {
-  display: flex; /* Añadido para alinear los botones */
-  gap: 10px; /* Espacio entre los botones */
-}
-
-/* Estilos para todos los botones del menú */
-.menu-button,
-.logout-button {
-  padding: 10px 15px;
-  color: white; /* Letra blanca */
-  font-weight: bold; /* Letra en negrita */
-  border: none; /* Quitamos el borde negro */
-  border-radius: 5px; /* Bordes redondeados */
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  transition: transform 0.3s ease;
-  display: none; /* Ocultos por defecto, los mostraremos con JS */
-}
-
-.logout-button {
-  background-color: #f44336;
-}
-.logout-button:hover {
-  background-color: #d32f2f;
-  border-radius: 5px;
-  transform: scale(1.1);
-}
-.menu-button {
-  background-color: #0f41e1;
-}
-.menu-button:hover {
-  background-color: #567aea;
-  border-radius: 5px;
-  transform: scale(1.1);
-}
-
-.fa-solid {
-  margin-left: 10px;
-}
-
-/*? ESTILOS DEL FORMULARIO DE PERFIL */
-
 #perfil-container {
   margin-top: 100px; /* Para que aparezca debajo del menú superior fijo */
   margin-left: auto; /* Empuja el contenedor a la derecha */
   margin-right: 20px; /* Añade un pequeño espacio al borde derecho */ /* Añade espacio al borde derecho */
 }
+#perfil-form {
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover {
+    color: #f44336;
+}
+
+
 .perfil-photo-container {
   position: relative;
   width: 150px;
@@ -270,24 +263,34 @@ input {
 .photo-upload-label:hover {
   transform: scale(1.1);
 }
-
-/*? ESTILOS DEL BOTÓN DE CERRAR EN EL FORMULARIO */
-#perfil-form {
-    position: relative;
+/*****************************************************************************/
+/* 5. ESTILOS DE ALERTAS */
+/*****************************************************************************/
+#alerta {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 15px 25px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0;
 }
 
-.close-button {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #888;
-    cursor: pointer;
-    transition: color 0.3s ease;
+#alerta.mostrar {
+  display: block;
+  opacity: 1;
 }
 
-.close-button:hover {
-    color: #f44336;
+#alerta.exito {
+  background-color: #4caf50;
 }
+
+#alerta.error {
+  background-color: #f44336;
+}
+
