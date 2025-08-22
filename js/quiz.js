@@ -49,6 +49,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
 
   // Referències als elements del DOM
   const moduleSelectionDiv = document.getElementById("module-selection");
+  const lessonsContainer = document.getElementById("lessons-container");
   const quizContainer = document.getElementById("quiz-container");
   const questionElement = document.getElementById("question");
   const optionsContainer = document.getElementById("options");
@@ -60,9 +61,13 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
   const progressContainer = document.getElementById("progress-container");
   const progressList = document.getElementById("progress-list");
 
+  // NOU: Assegurem que el contenidor de lliçons estigui ocult a l'inici
+  lessonsContainer.style.display = "none";
+
   // VERIFICACIÓ: Assegurem que tots els elements existeixen.
   if (
     !moduleSelectionDiv ||
+    !lessonsContainer ||
     !quizContainer ||
     !questionElement ||
     !optionsContainer ||
@@ -94,84 +99,187 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
   const PRACTICE_THRESHOLD = 30 * 24 * 60 * 60 * 1000;
 
   /**
-   * Obté la llista de mòduls disponibles des de la taula 'vocabulari'.
+   * Obté la llista de nivells (A1, B2, etc.) únics de la taula 'vocabulari'.
    */
-  async function fetchModulesFromSupabase() {
+  async function fetchLevelsFromSupabase() {
     const { data, error } = await _supabase
       .from("vocabulari")
-      .select("nivel")
-      .order("nivel", { ascending: true });
+      .select("nivel_base")
+      .order("nivel_base", { ascending: true });
 
     if (error) {
-      console.error("Error al obtener los módulos:", error.message);
+      console.error("Error al obtener los niveles:", error.message);
       return [];
     }
 
-    const uniqueModules = [...new Set(data.map((item) => item.nivel))];
-    return uniqueModules;
+    const uniqueLevels = [...new Set(data.map((item) => item.nivel_base))];
+    return uniqueLevels;
+  }
+
+  /**
+   * Obté la llista de temes per a un nivell específic.
+   */
+  async function fetchTopicsFromSupabase(level) {
+    const { data, error } = await _supabase
+      .from("vocabulari")
+      .select("tema")
+      .eq("nivel_base", level)
+      .order("tema", { ascending: true });
+
+    if (error) {
+      console.error(`Error al obtener los temas para ${level}:`, error.message);
+      return [];
+    }
+
+    const uniqueTopics = [...new Set(data.map((item) => item.tema))];
+    return uniqueTopics;
   }
 
   /**
    * Obté totes les paraules i dades per a un mòdul específic.
-   * @param {string} moduleKey - El nom del mòdul (nivell).
+   * @param {string} level - El nivell del mòdul (p.ex. "A1").
+   * @param {string} topic - El tema del mòdul (p.ex. "Adjetivos").
    */
-  async function fetchVocabularyFromSupabase(moduleKey) {
-    const { data, error } = await _supabase
+  async function fetchVocabularyAndLesson(level, topic) {
+    // Primera crida per obtenir el vocabulari, filtrant per `nivel_base` i `tema`
+    const { data: vocabData, error: vocabError } = await _supabase
       .from("vocabulari")
       .select("*")
-      .eq("nivel", moduleKey);
+      .eq("nivel_base", level)
+      .eq("tema", topic)
+      .order("id", { ascending: true });
 
-    if (error) {
-      console.error(
-        `Error al obtener el vocabulario para ${moduleKey}:`,
-        error.message
-      );
+    if (vocabError) {
+      console.error("Error al obtener el vocabulario:", vocabError.message);
       return [];
     }
-    return data;
+
+    // NOU: Combina les dades del vocabulari amb la primera lliçó trobada
+    const { data: lessonData, error: lessonError } = await _supabase
+      .from("explicaciones")
+      .select("titulo_leccion, contenido_html")
+      .eq("nivel_base", level)
+      .eq("tema", topic)
+      .order("id", { ascending: true });
+
+    if (lessonError) {
+      console.error("Error al obtener la lección:", lessonError.message);
+      return [];
+    }
+
+    const fullModuleData = vocabData.map((vocabItem) => ({
+      ...vocabItem,
+      explicaciones: lessonData.length > 0 ? lessonData[0] : null,
+    }));
+
+    return fullModuleData;
   }
 
   /**
-   * Omple la selecció de mòduls consultant la base de dades.
+   * Omple la selecció de mòduls per nivell.
    */
   async function populateModuleSelection() {
-    const availableModules = await fetchModulesFromSupabase();
-    moduleSelectionDiv.innerHTML = "<h2>Selecciona un módulo:</h2>";
+    const availableLevels = await fetchLevelsFromSupabase();
+    moduleSelectionDiv.innerHTML = "<h2>Selecciona un nivel:</h2>";
 
-    availableModules.forEach((moduleName) => {
+    // NOU: Amaguem els altres contenidors quan mostrem la selecció de mòduls
+    quizContainer.style.display = "none";
+    lessonsContainer.style.display = "none";
+    resultsContainer.style.display = "none";
+    moduleSelectionDiv.style.display = "block";
+
+    availableLevels.forEach((levelName) => {
       const button = document.createElement("button");
-      button.textContent = moduleName;
+      button.textContent = levelName;
+      button.addEventListener("click", () => {
+        populateTopicSelection(levelName);
+      });
+      moduleSelectionDiv.appendChild(button);
+    });
+  }
+
+  /**
+   * Omple la selecció de temes per a un nivell concret.
+   */
+  async function populateTopicSelection(levelName) {
+    const availableTopics = await fetchTopicsFromSupabase(levelName);
+    moduleSelectionDiv.innerHTML = `<h2>Selecciona un tema para ${levelName}:</h2>`;
+
+    // Botó per tornar al menú de nivells
+    const backButton = document.createElement("button");
+    backButton.textContent = "Volver a Niveles";
+    backButton.addEventListener("click", populateModuleSelection);
+    moduleSelectionDiv.appendChild(backButton);
+
+    availableTopics.forEach((topicName) => {
+      const button = document.createElement("button");
+      button.textContent = topicName;
       const status =
-        moduleProgress[moduleName] === "learned" ? " (Aprendido)" : "";
+        moduleProgress[`${levelName}${topicName}`] === "learned"
+          ? " (Aprendido)"
+          : "";
       button.textContent += status;
+
       button.addEventListener("click", async () => {
-        if (moduleProgress[moduleName] === "learned") {
-          selectedModuleToRetry = moduleName;
-          manejarAlerta(
-            `¡Este módulo está aprendido! ¿Quieres volver a practicar "${moduleName}"?`,
-            "info"
-          );
-          // La lògica de "confirm" s'ha de gestionar manualment a la interfície d'usuari
-          // Si l'usuari vol continuar, carrega el mòdul.
-          const moduleData = await fetchVocabularyFromSupabase(moduleName);
-          loadModule(moduleName, moduleData);
-          selectedModuleToRetry = null;
+        const fullModuleData = await fetchVocabularyAndLesson(
+          levelName,
+          topicName
+        );
+
+        if (fullModuleData && fullModuleData.length > 0) {
+          // Crida per carregar el mòdul
+          loadModule(`${levelName}${topicName}`, fullModuleData);
+
+          // També carreguem el contingut de la lliçó
+          const lessonTitle = fullModuleData[0].explicaciones.titulo_leccion;
+          const lessonContent = fullModuleData[0].explicaciones.contenido_html;
+          cargarLeccion(lessonTitle, lessonContent);
         } else {
-          const moduleData = await fetchVocabularyFromSupabase(moduleName);
-          loadModule(moduleName, moduleData);
+          manejarAlerta("No s'han trobat dades per a aquest mòdul.", "error");
         }
       });
       moduleSelectionDiv.appendChild(button);
     });
   }
 
+  /**
+   * Funció per carregar i mostrar el contingut de les lliçons a la barra lateral.
+   * @param {string} title - El títol de la lliçó.
+   * @param {string} content - El contingut de la lliçó en format HTML.
+   */
+  async function cargarLeccion(title, content) {
+    const lessonsListContainer = document.getElementById("lessons-list");
+    lessonsListContainer.innerHTML = ""; // Neteja el contingut anterior
+
+    if (title && content) {
+      const titleElement = document.createElement("h3");
+      titleElement.textContent = title;
+      lessonsListContainer.appendChild(titleElement);
+      lessonsListContainer.innerHTML += content;
+    } else {
+      lessonsListContainer.innerHTML = `<p>No s'ha trobat contingut per a aquesta lliçó.</p>`;
+    }
+  }
+
   function loadModule(moduleKey, module) {
     currentModuleKey = moduleKey;
-    currentModuleData = prepareModuleData(module);
+    // Preparem només les dades del qüestionari
+    const quizData = module.map((item) => ({
+      english: item.english,
+      spanish: item.spanish,
+      example: item.example,
+      nivel: item.nivel,
+    }));
+    currentModuleData = prepareModuleData(quizData);
     currentQuestionIndex = 0;
     correctAnswers = 0;
+
+    // NOU: Amaguem els altres contenidors i mostrem el del qüestionari
     moduleSelectionDiv.style.display = "none";
+    lessonsContainer.style.display = "block";
+    resultsContainer.style.display = "none";
     quizContainer.style.display = "block";
+
     loadQuestion();
   }
 

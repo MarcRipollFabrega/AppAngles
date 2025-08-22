@@ -1,218 +1,229 @@
 /*****************************************************************************/
-/* 1. ESTILOS GENERALES Y RESET */
+/* 1. ESTILS GENERALS I RESET */
 /*****************************************************************************/
+/* Apliquem box-sizing a tots els elements per simplificar el disseny */
 *,
 ::after,
 ::before {
-  margin: 0;
-  box-sizing: border-box;
+    margin: 0;
+    box-sizing: border-box;
 }
 
+/* Estils base del cos del document */
 body {
-  font-family: "Gentium Book Plus", serif;
-  min-height: 100vh;
-  background-image: url(/img/fondo.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  display: flex;
-  flex-direction: column;
+    font-family: "Gentium Book Plus", serif;
+    min-height: 100vh;
+    background-image: url(/img/fondo.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
 }
 
 input {
-  font: inherit;
+    font: inherit;
 }
 
-/*?CONTENEDOR PRINCIPAL PARA CENTRAR TODO EL CONTENIDO*/
-#auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+/* Estils per al contenidor del perfil */
+#perfil-container {
+    position: fixed; /* Fixem la posició a la pantalla */
+    top: 80px; /* Separació de 80px del top per quedar sota el menú */
+    right: 20px; /* Un petit marge a la dreta */
+    margin-top: 0;
+    margin-left: auto;
+    margin-right: 0;
+    width: min(450px, 90%);
+    z-index: 200; /* Assegura que es mostri per sobre de tot */
+    display: none; /* Amaguem per defecte */
 }
 
-.main-container {
-  padding: 2rem;
-  background-color: white;
-  width: min(450px, 90%);
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Utilitzem el main-container per donar-li el format de caixa */
+#perfil-container .main-container {
+    padding: 2rem;
+    background-color: white;
+    width: 100%;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-
 /*****************************************************************************/
-/* 2. ESTILOS DE NAVEGACIÓN (TOP-MENU) */
+/* 2. ESTILS DE NAVEGACIÓ (TOP-MENU) */
 /*****************************************************************************/
 .top-menu {
-  width: 100%;
-  background-color: white;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: fixed; /* Mantiene el menú en la parte superior */
-  top: 0;
-  left: 0;
-  z-index: 100;
+    width: 100%;
+    background-color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
 }
 
 .menu-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .menu-logo {
-  width: 40px;
-  height: 40px;
+    width: 40px;
+    height: 40px;
 }
 
 .app-name {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #0f41e1;
-}
-.menu-right {
-  display: flex; /* Añadido para alinear los botones */
-  gap: 10px; /* Espacio entre los botones */
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0f41e1;
 }
 
-/* Estilos para todos los botones del menú */
+.menu-right {
+    display: flex;
+    gap: 10px;
+}
+
 .menu-button,
 .logout-button {
-  padding: 10px 15px;
-  color: white; /* Letra blanca */
-  font-weight: bold; /* Letra en negrita */
-  border: none; /* Quitamos el borde negro */
-  border-radius: 5px; /* Bordes redondeados */
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  transition: transform 0.3s ease;
-  display: none; /* Ocultos por defecto, los mostraremos con JS */
+    padding: 10px 15px;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    display: none;
 }
 
 .logout-button {
-  background-color: #f44336;
+    background-color: #f44336;
 }
+
 .logout-button:hover {
-  background-color: #d32f2f;
-  border-radius: 5px;
-  transform: scale(1.1);
+    background-color: #d32f2f;
+    transform: scale(1.1);
 }
+
 .menu-button {
-  background-color: #0f41e1;
+    background-color: #0f41e1;
 }
+
 .menu-button:hover {
-  background-color: #567aea;
-  border-radius: 5px;
-  transform: scale(1.1);
-}
-
-.fa-solid {
-  margin-left: 10px;
+    background-color: #567aea;
+    transform: scale(1.1);
 }
 
 /*****************************************************************************/
-/* 3. ESTILOS DE FORMULARIOS DE AUTENTICACIÓN */
+/* 3. ESTILS DE FORMULARIS D'AUTENTICACIÓ I PERFIL */
 /*****************************************************************************/
-#registro-form {
-  display: none;
+#auth-forms-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Valor corregido */
+    z-index: 150;
 }
+
+/* Centrem el contenidor amb la classe `main-container` que ja utilitzes */
+#auth-forms-container .main-container {
+    margin: auto;
+}
+
+#registro-form,
+#login-form {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 2rem;
+    max-width: 450px;
+    width: 100%;
+    margin: auto;
+    margin-top: 10vh;
+}
+
 .form_title {
-  font-size: 2rem;
-  text-shadow: 2px 2px 4px #686666;
+    font-size: 2rem;
+    text-shadow: 2px 2px 4px #686666;
 }
 
 .form_inputs {
-  margin: 2rem 0 1.5rem;
-  display: grid;
-  gap: 1.5rem;
-  color: #6b6b6b;
+    margin: 2rem 0 1.5rem;
+    display: grid;
+    gap: 1.5rem;
+    color: #6b6b6b;
 }
 
 .form_label {
-  width: 100%;
-  display: grid;
-  grid-template-areas: "input";
+    width: 100%;
+    display: grid;
+    grid-template-areas: "input";
 }
 
 .form_input {
-  grid-area: input;
-  width: 100%;
-  border-radius: 10px;
-  border: 1px solid #d7d0d0;
-  padding: 0.7rem 1.5rem;
+    grid-area: input;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #d7d0d0;
+    padding: 0.7rem 1.5rem;
 }
 
 .form_text {
-  grid-area: input;
-  z-index: 100;
-  width: max-content;
-  height: 100%;
-  margin-left: 1rem;
-  padding: 0 0.5rem;
-  display: flex;
-  align-items: center;
-  transform-origin: left center;
-  transition: transform 0.3s;
+    grid-area: input;
+    z-index: 100;
+    width: max-content;
+    height: 100%;
+    margin-left: 1rem;
+    padding: 0 0.5rem;
+    display: flex;
+    align-items: center;
+    transform-origin: left center;
+    transition: transform 0.3s;
 }
 
 .form_input:is(:focus, :not(:placeholder-shown)) + .form_text {
-  background-color: white;
-  transform: translateY(-50%) scale(0.7);
+    background-color: white;
+    transform: translateY(-50%) scale(0.7);
 }
 
 .form_submit {
-  display: inline-block;
-  border-radius: 10px;
-  background-color: #0f41e1;
-  padding: 1rem 2rem;
-  color: white;
-  border: none;
-  margin-bottom: 20px;
+    display: inline-block;
+    border-radius: 10px;
+    background-color: #0f41e1;
+    padding: 1rem 2rem;
+    color: white;
+    border: none;
+    margin-bottom: 20px;
 }
 
 .form_submit:hover {
-  background-color: #567aea;
-  cursor: pointer;
-}
-
-.fa-solid {
-  margin-right: 10px;
+    background-color: #567aea;
+    cursor: pointer;
 }
 
 .form-image-container {
-  text-align: center;
-  margin-top: 1.5rem;
-  width: 150px;
-  height: 150px;
-  margin-left: auto;
-  margin-right: auto;
+    text-align: center;
+    margin-top: 1.5rem;
+    width: 150px;
+    height: 150px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .form-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/*****************************************************************************/
-/* 4. ESTILOS DE FORMULARIO DE PERFIL */
-/*****************************************************************************/
-#perfil-container {
-  position: fixed; /* Lo fija en la pantalla */
-  top: 80px; /* Posición debajo del menú superior */
-  right: 20px; /* Lo mueve a la derecha de la pantalla */
-  margin-top: 0; /* Eliminado para usar la propiedad 'top' */
-  margin-left: auto;
-  margin-right: 0;
-  width: min(450px, 90%);
-}
-#perfil-form {
-    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .close-button {
@@ -231,212 +242,224 @@ input {
     color: #f44336;
 }
 
-
 .perfil-photo-container {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  margin: 0 auto 2rem;
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 2rem;
 }
 
 .perfil-photo {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #0f41e1;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0f41e1;
 }
 
 .photo-upload-label {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 40px;
-  height: 40px;
-  background-color: #0f41e1;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease-in-out;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 40px;
+    height: 40px;
+    background-color: #0f41e1;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out;
 }
 
 .photo-upload-label:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
+
 /*****************************************************************************/
-/* 5. ESTILOS DE ALERTAS */
+/* 4. ESTILS D'ALERTES */
 /*****************************************************************************/
 #alerta {
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  padding: 15px 25px;
-  border-radius: 8px;
-  color: white;
-  font-size: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.5s ease-in-out;
-  opacity: 0;
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0;
 }
 
 #alerta.mostrar {
-  display: block;
-  opacity: 1;
+    display: block;
+    opacity: 1;
 }
 
 #alerta.exito {
-  background-color: #4caf50;
+    background-color: #4caf50;
 }
 
 #alerta.error {
-  background-color: #f44336;
+    background-color: #f44336;
 }
 
-
 /*****************************************************************************/
-/* 6. ESTILOS DE DISEÑO DE PANTALLA DIVIDIDA */
+/* 5. ESTILS DEL DISSENY DE PANTALLA DIVIDIDA */
 /*****************************************************************************/
 .split-screen-container {
-  display: flex;
-  flex: 1; /* Permet que el contenidor ocupi l'espai restant */
-  padding-top: 80px; /* Espai per sota del menú superior */
+    display: flex;
+    flex: 1;
+    padding-top: 80px;
 }
 
-.main-content {
-  flex: 3; /* Ocupa 3 parts de l'espai total (per exemple, 75%) */
-  padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.9); /* Fons semi-transparent */
-  overflow-y: auto; /* Permet desplaçament si el contingut és llarg */
+/* Classes per a les columnes */
+.lessons-container,
+.quiz-main-container,
+.sidebar {
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.lessons-container {
+    flex: 1;
+    background-color: rgba(230, 230, 230, 0.9);
+    border-right: 1px solid #ccc;
+}
+
+.quiz-main-container {
+    flex: 2;
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .sidebar {
-  flex: 1; /* Ocupa 1 part de l'espai total (per exemple, 25%) */
-  background-color: rgba(240, 240, 240, 0.9); /* Fons semi-transparent */
-  padding: 2rem;
-  border-left: 1px solid #ccc;
-  overflow-y: auto; /* Permet desplaçament */
+    flex: 1;
+    background-color: rgba(240, 240, 240, 0.9);
+    border-left: 1px solid #ccc;
 }
 
-/* Estilos para que el quiz se vea bien dentro del main-content */
-.quiz-main-container {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding-top: 100px; /* Nuevo: Añadimos padding para que el contenido no quede debajo del menú */
+/* Estils de contingut */
+#lessons-list,
+#quiz-content,
+#progress-container {
+    flex-grow: 1;
 }
 
 /*****************************************************************************/
-/* 7. ESTILOS PARA EL CUESTIONARIO Y MÓDULOS */
+/* 6. ESTILS PER AL QÜESTIONARI I MÒDULS */
 /*****************************************************************************/
+/* Agrupem els estils comuns per a la selecció de mòduls i el qüestionari */
 #module-selection,
-#quiz-container {
-  width: 100%;
-  max-width: 600px;
-  padding: 2rem;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin: 0 auto;
+#quiz-container,
+#results-container {
+    width: 100%;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin: 0 auto;
 }
 
 #quiz-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 #question {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 #options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
 }
 
 .option-button {
-  width: 100%;
-  padding: 1rem;
-  border: 2px solid #0f41e1;
-  border-radius: 8px;
-  background-color: white;
-  color: #0f41e1;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #0f41e1;
+    border-radius: 8px;
+    background-color: white;
+    color: #0f41e1;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .option-button:hover {
-  background-color: #0f41e1;
-  color: white;
+    background-color: #0f41e1;
+    color: white;
 }
 
 .option-button.correct {
-  background-color: #4caf50;
-  color: white;
-  border-color: #4caf50;
+    background-color: #4caf50;
+    color: white;
+    border-color: #4caf50;
 }
 
 .option-button.incorrect {
-  background-color: #f44336;
-  color: white;
-  border-color: #f44336;
+    background-color: #f44336;
+    color: white;
+    border-color: #f44336;
+}
+
+#next-button,
+#restart-button,
+.exit-quiz-button {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 1.5rem;
+    color: white;
 }
 
 #next-button,
 #restart-button {
-  padding: 1rem 2rem;
-  background-color: #0f41e1;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 1.5rem;
+    background-color: #0f41e1;
 }
 
 #next-button:hover,
 #restart-button:hover {
-  background-color: #567aea;
-}
-
-#feedback {
-  margin-top: 1rem;
-  font-weight: 600;
-  font-size: 1.1rem;
+    background-color: #567aea;
 }
 
 .exit-quiz-button {
-  width: 100%;
-  padding: 1rem 2rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 1rem;
+    background-color: #f44336;
 }
 
 .exit-quiz-button:hover {
-  background-color: #d32f2f;
+    background-color: #d32f2f;
+}
+
+#feedback {
+    margin-top: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.fa-solid {
+    margin-right: 10px;
+}
+
+.menu-button .fa-solid,
+.logout-button .fa-solid {
+    margin-left: 10px;
+    margin-right: 0;
 }

@@ -16,9 +16,10 @@ let userSession = null;
 import { initQuiz } from "./quiz.js";
 
 /***************************************************************************/
-/* 2. VARIABLES DELS ELEMENTS HTML */
+/* 2. VARIABLES DELS ELEMENTS HTML (CORREGIT) */
 /***************************************************************************/
-const authContainer = document.getElementById("auth-container");
+const authFormsContainer = document.querySelector("#auth-forms-container");
+const splitScreenContainer = document.querySelector(".split-screen-container");
 const registroForm = document.getElementById("registro-form");
 const loginForm = document.getElementById("login-form");
 const perfilContainer = document.getElementById("perfil-container");
@@ -36,9 +37,10 @@ const logoutButton = document.getElementById("logout-button");
 const perfilButton = document.getElementById("perfil-button");
 const alertDiv = document.getElementById("alerta");
 const nombreUsuarioInput = document.getElementById("nombre-usuario");
-const quizSection = document.getElementById("quiz-container"); // Usamos el ID correcto: quiz-container
-const moduleSelection = document.getElementById("module-selection"); // Referencia a la pantalla de módulos
-const exitQuizButton = document.getElementById("exit-quiz-button"); // Nuevo botón de salida
+// Aquest ID fa referència al contenidor de les preguntes (quiz) en si mateix
+const quizContainer = document.getElementById("quiz-container");
+const moduleSelection = document.getElementById("module-selection");
+const exitQuizButton = document.getElementById("exit-quiz-button");
 
 /***************************************************************************/
 /* 3. FUNCIONS D'UTILITAT I DADES */
@@ -83,52 +85,44 @@ async function cargarDatosPerfil() {
 }
 
 /***************************************************************************/
-/* 4. LÒGICA DE LA INTERFÍCIE D'USUARI */
+/* 4. LÒGICA DE LA INTERFÍCIE D'USUARI (CORREGIT) */
 /***************************************************************************/
 document.addEventListener("DOMContentLoaded", async () => {
-  // Ocultem la secció principal del qüestionari per defecte.
-  if (quizSection) {
-    quizSection.style.display = "none";
-  }
-
-  // Assegurem que l'estat inicial dels formularis de registre i login és correcte.
-  if (registroForm && loginForm) {
-    registroForm.style.display = "block"; // Mostrem el formulari de registre per defecte
-    loginForm.style.display = "none"; // Amaguem el formulari de login
-  }
+  // === LÒGICA D'INICIALITZACIÓ DE LA INTERFÍCIE ===
+  // L'estat inicial ja el gestionarà 'onAuthStateChange', no cal posar-lo aquí.
 
   // Lògica de verificació de sessió i inicialització de la interfície.
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     userSession = session;
-    console.log("Estat d'autenticació canviat:", event, "Sessió:", session); // Ajuda per a la depuració
+    console.log("Estat d'autenticació canviat:", event, "Sessió:", session);
 
     if (session) {
-      // Usuari autenticat
-      authContainer.style.display = "none";
+      // === USUARI AUTENTICAT ===
+      authFormsContainer.style.display = "none";
+      splitScreenContainer.style.display = "flex";
       perfilContainer.style.display = "none";
       logoutButton.style.display = "block";
       perfilButton.style.display = "block";
 
-      // Mostrem el qüestionari només si l'element existeix.
-      if (quizSection) {
+      // Mostrem la selecció de mòduls per defecte
+      if (moduleSelection) {
         moduleSelection.style.display = "block";
-        quizSection.style.display = "none";
+      }
+      // Amaguem el contenidor de preguntes
+      if (quizContainer) {
+        quizContainer.style.display = "none";
       }
 
       cargarDatosPerfil();
-      // Inicialitzem el qüestionari amb el client de Supabase
-      initQuiz(supabaseClient);
+      // Inicialitzem el qüestionari amb el client de Supabase i la funció d'alerta
+      initQuiz(supabaseClient, manejarAlerta);
     } else {
-      // Usuari no autenticat
-      authContainer.style.display = "flex";
+      // === USUARI NO AUTENTICAT ===
+      authFormsContainer.style.display = "flex";
+      splitScreenContainer.style.display = "none";
       perfilContainer.style.display = "none";
       logoutButton.style.display = "none";
       perfilButton.style.display = "none";
-
-      // Amaguem el qüestionari si l'element existeix.
-      if (quizSection) {
-        quizSection.style.display = "none";
-      }
     }
   });
 
@@ -203,7 +197,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const { error: signInError } = await supabaseClient.auth.signInWithPassword(
-      { email, password }
+      {
+        email,
+        password,
+      }
     );
 
     if (signInError) {
@@ -225,12 +222,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   perfilButton.addEventListener("click", () => {
-    authContainer.style.display = "none";
     perfilContainer.style.display = "flex";
     cargarDatosPerfil();
   });
 
   closePerfilButton.addEventListener("click", () => {
+    if (userSession) {
+      splitScreenContainer.style.display = "flex";
+    } else {
+      authFormsContainer.style.display = "flex";
+    }
     perfilContainer.style.display = "none";
   });
 
@@ -305,11 +306,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // === AÑADIMOS LA FUNCIONALIDAD DEL BOTÓN "SALIR DEL CUESTIONARIO" ===
-  // Esto asegura que la lógica se añada solo si el botón existe.
   if (exitQuizButton) {
     exitQuizButton.addEventListener("click", () => {
-      // Oculta el contenedor del cuestionario
-      quizSection.style.display = "none";
+      // Oculta el contenedor del cuestionario de preguntas
+      quizContainer.style.display = "none";
       // Muestra el contenedor de selección de módulos
       moduleSelection.style.display = "block";
     });
