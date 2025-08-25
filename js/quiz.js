@@ -1,31 +1,31 @@
 // Aquest fitxer conté tota la lògica del qüestionari, separada de l'arxiu principal.
 
 /**
- * Funció per reproduir una paraula o frase en anglès utilitzant Text-to-Speech.
+ * Funció per reproduir una paraula o frase utilitzant Text-to-Speech.
  * @param {string} word - La paraula o frase a reproduir.
+ * @param {string} languageCode - El codi de l'idioma a utilitzar (p.ex., "en-US", "es-ES").
  */
-function playWord(word) {
+function playWord(word, languageCode) {
   if ("speechSynthesis" in window) {
     const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = "en-US";
+    utterance.lang = languageCode;
 
     const voices = window.speechSynthesis.getVoices();
-    let englishVoice = null;
+    let selectedVoice = null;
     for (let i = 0; i < voices.length; i++) {
-      if (voices[i].lang.startsWith("en")) {
-        englishVoice = voices[i];
+      if (voices[i].lang.startsWith(languageCode.split("-")[0])) {
         if (voices[i].name.toLowerCase().includes("female")) {
-          englishVoice = voices[i];
-          break;
+          selectedVoice = voices[i];
+          break; // Prioriza la voz femenina y sale del bucle
         }
-        if (!englishVoice) {
-          englishVoice = voices[i];
+        if (!selectedVoice) {
+          selectedVoice = voices[i]; // Guarda la primera voz del idioma como fallback
         }
       }
     }
 
-    if (englishVoice) {
-      utterance.voice = englishVoice;
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
     }
 
     utterance.rate = 0.9;
@@ -92,7 +92,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
   let currentQuestion;
   let currentUser = null; // Variable per guardar l'usuari actual
 
-  const CORRECT_THRESHOLD = 5; // NOU: Llindar de 5 respostes correctes
+  const CORRECT_THRESHOLD = 3; // NOU: Llindar de 3 respostes correctes
   const ONE_MONTH_IN_MS = 30 * 24 * 60 * 60 * 1000;
 
   /**
@@ -112,6 +112,9 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
   /**
    * Funció per actualitzar el progrés de l'usuari a la base de dades.
    */
+  /**
+   * Funció per actualitzar el progrés de l'usuari a la base de dades.
+   */
   async function updateProgress(userId, wordId, isCorrect) {
     if (!userId || !wordId) {
       console.error(
@@ -122,7 +125,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
 
     const { data: existingProgress, error: fetchError } = await _supabase
       .from("progres_usuari")
-      .select("vegades_correctes, vegades_incorrectes")
+      .select("vegades_correctes, vegades_incorrectes, estat") // També busquem l'estat per una millor lògica
       .eq("id_usuari", userId)
       .eq("id_paraula", wordId)
       .single();
@@ -132,29 +135,63 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       return;
     }
 
-    const newCorrect = existingProgress
-      ? existingProgress.vegades_correctes + (isCorrect ? 1 : 0)
-      : isCorrect
-      ? 1
+    // Si no hi ha progrés preexistent, creem els valors per defecte
+    const currentCorrect = existingProgress
+      ? existingProgress.vegades_correctes
       : 0;
-    const newIncorrect = existingProgress
-      ? existingProgress.vegades_incorrectes + (isCorrect ? 0 : 1)
-      : isCorrect
-      ? 0
-      : 1;
+    const currentIncorrect = existingProgress
+      ? existingProgress.vegades_incorrectes
+      : 0;
 
+    let newCorrect = currentCorrect;
+    let newIncorrect = currentIncorrect;
+
+    if (isCorrect) {
+      // Si la resposta és CORRECTA:
+      if (currentIncorrect > 0) {
+        // Si hi ha errors acumulats, els reduïm abans de sumar respostes correctes
+        newIncorrect = currentIncorrect - 1;
+      } else {
+        // Si no hi ha errors, sumem una resposta correcta
+        newCorrect = currentCorrect + 1;
+      }
+    } else {
+      // Si la resposta és INCORRECTA:
+      // Sempre sumem un error
+      newIncorrect = currentIncorrect + 1;
+      // Si l'estat era 'apresa', el revertim a 'practicant'
+      if (existingProgress?.estat === "apresa") {
+        const { error: updateStateError } = await _supabase
+          .from("progres_usuari")
+          .update({ estat: "practicant", vegades_correctes: 0 })
+          .eq("id_usuari", userId)
+          .eq("id_paraula", wordId);
+        if (updateStateError) {
+          console.error("Error al actualitzar l'estat:", updateStateError);
+        }
+      }
+    }
+
+    // La lògica de l'estat 'apresa' es basa en el comptador de respostes correctes
     const newState = newCorrect >= CORRECT_THRESHOLD ? "apresa" : "practicant";
-    const finalIncorrect = newCorrect >= CORRECT_THRESHOLD ? 0 : newIncorrect;
+
+    // Si la paraula arriba a 'apresa', resetejem el comptador d'errors.
+    if (newState === "apresa") {
+      newIncorrect = 0;
+    }
+
+    // Operació d'actualització o inserció a la base de dades
+    const dataToUpdate = {
+      vegades_correctes: newCorrect,
+      vegades_incorrectes: newIncorrect,
+      estat: newState,
+      data_ultima_practica: new Date().toISOString(),
+    };
 
     if (existingProgress) {
       const { error: updateError } = await _supabase
         .from("progres_usuari")
-        .update({
-          vegades_correctes: newCorrect,
-          vegades_incorrectes: finalIncorrect,
-          estat: newState,
-          data_ultima_practica: new Date().toISOString(),
-        })
+        .update(dataToUpdate)
         .eq("id_usuari", userId)
         .eq("id_paraula", wordId);
 
@@ -166,11 +203,9 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
         .from("progres_usuari")
         .insert([
           {
+            ...dataToUpdate,
             id_usuari: userId,
             id_paraula: wordId,
-            vegades_correctes: newCorrect,
-            vegades_incorrectes: finalIncorrect,
-            estat: newState,
           },
         ]);
 
@@ -202,18 +237,38 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
    * Obté la llista de temes per a un nivell específic.
    */
   async function fetchTopicsFromSupabase(level) {
-    const { data, error } = await _supabase
-      .from("vocabulari")
-      .select("tema")
-      .eq("nivel_base", level)
-      .order("tema", { ascending: true });
+    let allTopics = [];
+    let offset = 0;
+    const limit = 1000;
 
-    if (error) {
-      console.error(`Error al obtener los temas para ${level}:`, error.message);
-      return [];
+    while (true) {
+      const { data, error } = await _supabase
+        .from("vocabulari")
+        .select("tema")
+        .eq("nivel_base", level)
+        .range(offset, offset + limit - 1)
+        .order("tema", { ascending: true });
+
+      if (error) {
+        console.error(
+          `Error al obtener los temas para ${level}:`,
+          error.message
+        );
+        break; // Sortim del bucle en cas d'error
+      }
+
+      // Afegeix les dades rebudes al teu array de tots els temes
+      allTopics.push(...data);
+
+      // Si la quantitat de dades rebuda és menor que el límit, vol dir que hem arribat al final
+      if (data.length < limit) {
+        break;
+      }
+
+      offset += limit;
     }
 
-    const uniqueTopics = [...new Set(data.map((item) => item.tema))];
+    const uniqueTopics = [...new Set(allTopics.map((item) => item.tema))];
     return uniqueTopics;
   }
 
@@ -291,21 +346,31 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
    * Omple la selecció de temes per a un nivell concret.
    */
   async function populateTopicSelection(levelName) {
+    // Obtenim els temes de la base de dades
     const availableTopics = await fetchTopicsFromSupabase(levelName);
-    moduleSelectionDiv.innerHTML = `<h2>Selecciona un tema para ${levelName}:</h2>`;
+
+    // 1. Netejar completament el contenidor
+    // Aquesta línia és clau per assegurar-se que no hi hagi contingut anterior
+    moduleSelectionDiv.innerHTML = "";
+
+    // 2. Afegir l'encapçalament i el botó de "Tornar"
+    const heading = document.createElement("h2");
+    heading.textContent = `Selecciona un tema para ${levelName}:`;
+    moduleSelectionDiv.appendChild(heading);
 
     const backButton = document.createElement("button");
     backButton.textContent = "Volver a Niveles";
     backButton.addEventListener("click", populateModuleSelection);
     moduleSelectionDiv.appendChild(backButton);
 
+    // 3. Afegir tots els botons dels temes
     availableTopics.forEach((topicName) => {
       const button = document.createElement("button");
       button.textContent = topicName;
-
       button.addEventListener("click", async () => {
         loadModule(`${levelName}${topicName}`);
       });
+      // Afegeix cada botó al final del contenidor
       moduleSelectionDiv.appendChild(button);
     });
   }
@@ -343,7 +408,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     // 1. Obtenir totes les paraules del mòdul
     const { data: vocabData, error: vocabError } = await _supabase
       .from("vocabulari")
-      .select("id, english, spanish, example, nivel_base")
+      .select("id, english, spanish, example, nivel_base, example_spanish")
       .eq("nivel_base", level)
       .eq("tema", topic);
 
@@ -374,13 +439,20 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     );
 
     const allWords = vocabData.map((word) => {
+      // Obtenim l'estat actual del progrés
+      const progress = progressMap.get(word.id) || {
+        vegades_correctes: 0,
+        vegades_incorrectes: 0,
+        estat: "nova",
+      };
+
+      // Definim la direcció de la pregunta segons l'estat de la paraula
+      const direction = progress.estat === "apresa" ? "es-en" : "en-es";
+
       return {
         ...word,
-        progress: progressMap.get(word.id) || {
-          vegades_correctes: 0,
-          vegades_incorrectes: 0,
-          estat: "nova",
-        },
+        progress,
+        direction, // Afegeix la nova propietat de direcció
       };
     });
 
@@ -453,49 +525,77 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     loadQuestion();
   }
 
-  function loadQuestion() {
-    if (currentQuestionIndex < currentModuleData.length) {
-      currentQuestion = currentModuleData[currentQuestionIndex];
-      questionElement.textContent = `¿Cuál es la traducción de "${currentQuestion.english}"?`;
+function loadQuestion() {
+  if (currentQuestionIndex < currentModuleData.length) {
+    currentQuestion = currentModuleData[currentQuestionIndex];
+    optionsContainer.innerHTML = "";
+    feedbackElement.textContent = "";
 
-      const exampleElement = document.createElement("p");
-      exampleElement.textContent = `Ejemplo: ${currentQuestion.example}`;
-      questionElement.appendChild(document.createElement("br"));
-      questionElement.appendChild(exampleElement);
+    let questionText,
+      exampleText,
+      wordToPlay,
+      exampleToPlay,
+      languageCode,
+      correctAnswer,
+      allOptions;
 
-      playWord(currentQuestion.example);
-
-      optionsContainer.innerHTML = "";
-
-      const correctAnswer = currentQuestion.spanish;
-      const allSpanishWords = currentModuleData.map((item) => item.spanish);
-      const randomOptions = new Set();
-      randomOptions.add(correctAnswer);
-
-      while (randomOptions.size < 4) {
-        const randomIndex = Math.floor(Math.random() * allSpanishWords.length);
-        const randomWord = allSpanishWords[randomIndex];
-        randomOptions.add(randomWord);
-      }
-
-      const optionsArray = Array.from(randomOptions);
-      optionsArray.sort(() => Math.random() - 0.5);
-
-      optionsArray.forEach((option) => {
-        const button = document.createElement("button");
-        button.textContent = option;
-        button.addEventListener("click", () =>
-          checkAnswer(option, correctAnswer)
-        );
-        optionsContainer.appendChild(button);
-      });
-
-      feedbackElement.textContent = "";
-      playWord(currentQuestion.english);
+    if (currentQuestion.direction === "en-es") {
+      // Nivel 1: Traducción de inglés a español
+      questionText = `¿Cuál es la traducción de "${currentQuestion.english}"?`;
+      exampleText = currentQuestion.example;
+      wordToPlay = currentQuestion.english;
+      exampleToPlay = currentQuestion.example;
+      languageCode = "en-US";
+      correctAnswer = currentQuestion.spanish;
+      allOptions = currentModuleData.map((item) => item.spanish);
     } else {
-      showModuleResults();
+      // Nivel 2: Traducción de español a inglés (ya aprendida)
+      questionText = `¿Cuál es la traducción de "${currentQuestion.spanish}"?`;
+      exampleText = currentQuestion.example_spanish;
+      wordToPlay = currentQuestion.spanish;
+      exampleToPlay = currentQuestion.example_spanish;
+      languageCode = "es-ES";
+      correctAnswer = currentQuestion.english;
+      allOptions = currentModuleData.map((item) => item.english);
     }
+
+    // Renderizar la pregunta y el ejemplo
+    questionElement.textContent = questionText;
+    const exampleElement = document.createElement("p");
+    exampleElement.textContent = `Ejemplo: ${exampleText}`;
+    questionElement.appendChild(document.createElement("br"));
+    questionElement.appendChild(exampleElement);
+
+    // Reproducir primero la palabra principal y luego el ejemplo
+    playWord(wordToPlay, languageCode);
+    setTimeout(() => {
+      playWord(exampleToPlay, languageCode);
+    }, 500); // Pequeño retraso para que suene más natural
+
+    // Generar opciones y renderizar los botones
+    const randomOptions = new Set();
+    randomOptions.add(correctAnswer);
+    while (randomOptions.size < 4) {
+      const randomIndex = Math.floor(Math.random() * allOptions.length);
+      const randomWord = allOptions[randomIndex];
+      randomOptions.add(randomWord);
+    }
+    const optionsArray = Array.from(randomOptions).sort(
+      () => Math.random() - 0.5
+    );
+
+    optionsArray.forEach((option) => {
+      const button = document.createElement("button");
+      button.textContent = option;
+      button.addEventListener("click", () =>
+        checkAnswer(option, correctAnswer)
+      );
+      optionsContainer.appendChild(button);
+    });
+  } else {
+    showModuleResults();
   }
+}
 
   async function checkAnswer(selectedAnswer, correctAnswer) {
     const buttons = optionsContainer.querySelectorAll("button");
@@ -585,11 +685,11 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       progressList.innerHTML += "<h3>Paraules apreses:</h3>";
       learnedWords.forEach((item) => {
         progressList.innerHTML += `
-                    <li>
-                        <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
-                        <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
-                    </li>
-                `;
+                      <li>
+                          <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
+                          <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
+                      </li>
+                  `;
       });
     }
 
@@ -600,11 +700,11 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       progressList.innerHTML += "<h3>Paraules que necessiten pràctica:</h3>";
       needsPracticeWords.forEach((item) => {
         progressList.innerHTML += `
-                    <li>
-                        <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
-                        <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
-                    </li>
-                `;
+                      <li>
+                          <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
+                          <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
+                      </li>
+                  `;
       });
     }
   }
