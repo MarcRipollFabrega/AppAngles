@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LINGUAQUIZ</title>
@@ -10,226 +10,252 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-            href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-            rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+      rel="stylesheet"
     />
     <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-            xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
 
     <link rel="stylesheet" href="css/estilos.css" />
-</head>
+  </head>
 
-<body>
-<header>
-    <nav class="top-menu" id="top-menu">
+  <body>
+    <header>
+      <nav class="top-menu" id="top-menu">
         <div class="menu-left">
-            <img src="img/logo.png" alt="Logo LINGUAQUIZ" class="menu-logo" />
-            <span class="app-name">LINGUAQUIZ</span>
+          <img src="img/logo.png" alt="Logo LINGUAQUIZ" class="menu-logo" />
+          <span class="app-name">LINGUAQUIZ</span>
         </div>
         <div class="menu-right">
-            <button id="perfil-button" class="menu-button">
-                Perfil <i class="fa-solid fa-user-circle"></i>
-            </button>
-            <button id="logout-button" class="logout-button" style="display: none">
-                Cerrar Sesión <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
+          <button id="perfil-button" class="menu-button">
+            Perfil <i class="fa-solid fa-user-circle"></i>
+          </button>
+          <button
+            id="logout-button"
+            class="logout-button"
+            style="display: none"
+          >
+            Cerrar Sesión <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
         </div>
-    </nav>
-</header>
+      </nav>
+    </header>
 
-<div class="split-screen-container">
-         <section class="main-container lessons-container" id="lessons-container">
-    <div id="lessons-list">
-        </div>
-    <button id="start-quiz-button" style="display: none;">Iniciar Qüestionari</button>
-</section>
-    <main class="quiz-main-container">
+    <div class="split-screen-container">
+      <section class="main-container lessons-container" id="lessons-container">
+        <div id="lessons-list"></div>
+        <button id="start-quiz-button" style="display: none">
+          Iniciar Qüestionari
+        </button>
+      </section>
+      <main class="quiz-main-container">
         <section id="quiz-content">
-            <h1>Cuestionario</h1>
-            <div id="module-selection">
-                <h2>Selecciona un
-                    módulo:</h2>
-            </div>
-            <div id="quiz-container">
-                <h2 id="question"></h2>
-                <div id="options">
-                </div>
-                <button id="next-button">Siguiente</button>
-                <button id="exit-quiz-button" class="exit-quiz-button">Salir del
-                    Cuestionario</button>
-                <p id="feedback"></p>
-            </div>
-            <div id="results-container" >
-                <h2>Resultados</h2>
-                <ul id="results-list"></ul>
-                <button id="restart-button">Reiniciar
-                    Cuestionario</button>
-            </div>
+          <h1>Cuestionario</h1>
+          <div id="module-selection">
+            <h2>Selecciona un módulo:</h2>
+          </div>
+          <div id="quiz-container">
+            <h2 id="question"></h2>
+            <div id="options"></div>
+            <button id="next-button">Siguiente</button>
+            <button id="exit-quiz-button" class="exit-quiz-button">
+              Salir del Cuestionario
+            </button>
+            <p id="feedback"></p>
+          </div>
+          <div id="results-container">
+            <h2>Resultados</h2>
+            <ul id="results-list"></ul>
+            <button id="restart-button">Reiniciar Cuestionario</button>
+          </div>
         </section>
-    </main>
-    <aside class="sidebar">
+      </main>
+      <aside class="sidebar">
         <div id="progress-container">
-            <h2>Progreso</h2>
-            <ul id="progress-list"></ul>
-        </div>
-    </aside>
-</div>
+          <h2 id="progress-chart-title">Progreso del Nivel</h2>
+          <div class="progress-chart">
+            <svg
+              id="progress-chart-svg"
+              width="200"
+              height="200"
+              viewBox="0 0 100 100"
+            >
+              <circle cx="50" cy="50" r="45" fill="#f0f0f0" />
 
-<section id="auth-forms-container">
-    <form id="registro-form" class="main-container" style="display: none;">
+              <path id="no-practicadas-path" fill="#CCCCCC"></path>
+              <path id="incorrectas-path" fill="#D9534F"></path>
+              <path id="en-progreso-path" fill="#F0AD4E"></path>
+              <path id="aprendidas-path" fill="#5CB85C"></path>
+
+              <circle cx="50" cy="50" r="30" fill="white"></circle>
+
+              <text
+                id="level-text"
+                x="50"
+                y="50"
+                text-anchor="middle"
+                dominant-baseline="central"
+                font-size="10"
+                font-weight="bold"
+              ></text>
+            </svg>
+            <div id="progress-text"></div>
+          </div>
+          <ul id="progress-list"></ul>
+        </div>
+      </aside>
+    </div>
+
+    <section id="auth-forms-container">
+      <form id="registro-form" class="main-container" style="display: none">
         <div class="form-image-container">
-            <img
-                    src="img/logo.png"
-                    alt="Logo de
+          <img
+            src="img/logo.png"
+            alt="Logo de
 registro"
-                    class="form-image"
-            />
+            class="form-image"
+          />
         </div>
         <h2 class="form_title">REGISTRO</h2>
         <div class="form_inputs">
-            <label class="form_label">
-                <input
-                        type="email"
-                        id="email"
-                        placeholder=" "
-                        required
-                        class="form_input"
-                />
-                <span class="form_text">
-                <i class="fa-solid
-fa-envelope"></i>Ingresa tu correo
-                </span>
-            </label>
-            <label class="form_label">
-                <input
-                        type="password"
-                        id="password"
-                        placeholder=" "
-                        required
-                        class="form_input"
-                />
-                <span class="form_text">
-                <i class="fa-solid fa-key"></i>Ingresa tu contraseña
-                </span>
-            </label>
+          <label class="form_label">
+            <input
+              type="email"
+              id="email"
+              placeholder=" "
+              required
+              class="form_input"
+            />
+            <span class="form_text">
+              <i class="fa-solid fa-envelope"></i>Ingresa tu correo
+            </span>
+          </label>
+          <label class="form_label">
+            <input
+              type="password"
+              id="password"
+              placeholder=" "
+              required
+              class="form_input"
+            />
+            <span class="form_text">
+              <i class="fa-solid fa-key"></i>Ingresa tu contraseña
+            </span>
+          </label>
         </div>
         <button type="submit" class="form_submit">
-            <i class="fa-solid fa-user-plus"></i> REGISTRO
+          <i class="fa-solid fa-user-plus"></i> REGISTRO
         </button>
         <p>
-            ¿Ya
-            estás registrado?
-            <a class="toggle-link" href="#">Iniciar Sessión</a>
+          ¿Ya estás registrado?
+          <a class="toggle-link" href="#">Iniciar Sessión</a>
         </p>
-    </form>
+      </form>
 
-    <form id="login-form" class="main-container">
+      <form id="login-form" class="main-container">
         <div class="form-image-container">
-            <img
-                    src="img/logo.png"
-                    alt="Logo
+          <img
+            src="img/logo.png"
+            alt="Logo
 de inicio de sesión"
-                    class="form-image"
-            />
+            class="form-image"
+          />
         </div>
         <h2 class="form_title">INICIÓ DE SESIÓN</h2>
         <div class="form_inputs">
-            <label class="form_label">
-                <input
-                        type="email"
-                        id="login-email"
-                        placeholder=" "
-                        class="form_input"
-                />
-                <span class="form_text">
-                <i class="fa-solid
-fa-envelope"></i>Ingresa tu correo
-                </span>
-            </label>
-            <label class="form_label">
-                <input
-                        type="password"
-                        id="login-password"
-                        placeholder=" "
-                        class="form_input"
-                />
-                <span class="form_text">
-                <i class="fa-solid fa-key"></i>Ingresa tu contraseña
-                </span>
-            </label>
+          <label class="form_label">
+            <input
+              type="email"
+              id="login-email"
+              placeholder=" "
+              class="form_input"
+            />
+            <span class="form_text">
+              <i class="fa-solid fa-envelope"></i>Ingresa tu correo
+            </span>
+          </label>
+          <label class="form_label">
+            <input
+              type="password"
+              id="login-password"
+              placeholder=" "
+              class="form_input"
+            />
+            <span class="form_text">
+              <i class="fa-solid fa-key"></i>Ingresa tu contraseña
+            </span>
+          </label>
         </div>
         <button type="submit" class="form_submit">
-            <i class="fa-solid fa-right-to-bracket"></i> INICIAR
+          <i class="fa-solid fa-right-to-bracket"></i> INICIAR
         </button>
         <p>
-            ¿No
-            estás registrado? <a class="toggle-link" href="#">Registro</a>
+          ¿No estás registrado? <a class="toggle-link" href="#">Registro</a>
         </p>
-    </form>
-</section>
+      </form>
+    </section>
 
-<section id="perfil-info-container">
-    <div id="perfil-container" class="main-container" style="display: none">
+    <section id="perfil-info-container">
+      <div id="perfil-container" class="main-container" style="display: none">
         <form id="perfil-form" class="main-container">
-            <button type="button" id="close-perfil-button" class="close-button">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <h2 class="form_title">Tu Perfil</h2>
-            <div class="perfil-photo-container">
-                <img
-                        id="perfil-photo-preview"
-                        src="img/silueta.jpg"
-                        alt="Foto de perfil"
-                        class="perfil-photo"
-                />
-                <label for="perfil-photo-upload" class="photo-upload-label">
-                    <i class="fa-solid fa-camera"></i>
-                </label>
-                <input
-                        type="file"
-                        id="perfil-photo-upload"
-                        accept="image/*"
-                        style="display: none"
-                />
-            </div>
-            <div class="form_inputs">
-                <label class="form_label">
-                    <input
-                            id="nombre-completo"
-                            class="form_input"
-                            type="text"
-                            placeholder=" "
-                            autocomplete="name"
-                            required
-                    />
-                    <span class="form_text">Nombre completo</span>
-                </label>
-                <label class="form_label">
-                    <input
-                            id="nombre-usuario"
-                            class="form_input"
-                            type="text"
-                            placeholder=" "
-                            required
-                    />
-                    <span class="form_text">Nombre de usuario</span>
-                </label>
-            </div>
-            <button type="submit" class="form_submit">Guardar Cambios</button>
+          <button type="button" id="close-perfil-button" class="close-button">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <h2 class="form_title">Tu Perfil</h2>
+          <div class="perfil-photo-container">
+            <img
+              id="perfil-photo-preview"
+              src="img/silueta.jpg"
+              alt="Foto de perfil"
+              class="perfil-photo"
+            />
+            <label for="perfil-photo-upload" class="photo-upload-label">
+              <i class="fa-solid fa-camera"></i>
+            </label>
+            <input
+              type="file"
+              id="perfil-photo-upload"
+              accept="image/*"
+              style="display: none"
+            />
+          </div>
+          <div class="form_inputs">
+            <label class="form_label">
+              <input
+                id="nombre-completo"
+                class="form_input"
+                type="text"
+                placeholder=" "
+                autocomplete="name"
+                required
+              />
+              <span class="form_text">Nombre completo</span>
+            </label>
+            <label class="form_label">
+              <input
+                id="nombre-usuario"
+                class="form_input"
+                type="text"
+                placeholder=" "
+                required
+              />
+              <span class="form_text">Nombre de usuario</span>
+            </label>
+          </div>
+          <button type="submit" class="form_submit">Guardar Cambios</button>
         </form>
+      </div>
+    </section>
+
+    <div id="alerta">
+      <p>alerta</p>
     </div>
-</section>
 
-
-<div id="alerta">
-    <p>alerta</p>
-</div>
-
-<script src="js/app.js" type="module"></script>
-</body>
+    <script src="js/app.js" type="module"></script>
+  </body>
 </html>

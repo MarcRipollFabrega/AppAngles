@@ -16,7 +16,7 @@ function playWord(word, languageCode) {
       if (voices[i].lang.startsWith(languageCode.split("-")[0])) {
         if (voices[i].name.toLowerCase().includes("female")) {
           selectedVoice = voices[i];
-          break; // Prioriza la voz femenina y sale del bucle
+          break; // Prioritza la voz femenina y sale del bucle
         }
         if (!selectedVoice) {
           selectedVoice = voices[i]; // Guarda la primera voz del idioma como fallback
@@ -45,675 +45,791 @@ function playWord(word, languageCode) {
  * @param {function} manejarAlerta - La funció per mostrar alertes.
  */
 export async function initQuiz(supabaseClient, manejarAlerta) {
-  const _supabase = supabaseClient;
+  try {
+    const _supabase = supabaseClient; // Referències als elements del DOM
 
-  // Referències als elements del DOM
-  const moduleSelectionDiv = document.getElementById("module-selection");
-  const lessonsContainer = document.getElementById("lessons-container");
-  const quizContainer = document.getElementById("quiz-container");
-  const questionElement = document.getElementById("question");
-  const optionsContainer = document.getElementById("options");
-  const nextButton = document.getElementById("next-button");
-  const feedbackElement = document.getElementById("feedback");
-  const resultsContainer = document.getElementById("results-container");
-  const resultsList = document.getElementById("results-list");
-  const restartButton = document.getElementById("restart-button");
-  const progressContainer = document.getElementById("progress-container");
-  const progressList = document.getElementById("progress-list");
+    const moduleSelectionDiv = document.getElementById("module-selection");
+    const lessonsContainer = document.getElementById("lessons-container");
+    const quizContainer = document.getElementById("quiz-container");
+    const questionElement = document.getElementById("question");
+    const optionsContainer = document.getElementById("options");
+    const nextButton = document.getElementById("next-button");
+    const feedbackElement = document.getElementById("feedback");
+    const resultsContainer = document.getElementById("results-container");
+    const resultsList = document.getElementById("results-list");
+    const restartButton = document.getElementById("restart-button");
+    const progressContainer = document.getElementById("progress-container");
+    const progressList = document.getElementById("progress-list");
+    const sidebar = document.querySelector(".sidebar");
 
-  // NOU: Assegurem que el contenidor de lliçons estigui ocult a l'inici
-  lessonsContainer.style.display = "none";
+    lessonsContainer.style.display = "none";
 
-  // VERIFICACIÓ: Assegurem que tots els elements existeixen.
-  if (
-    !moduleSelectionDiv ||
-    !lessonsContainer ||
-    !quizContainer ||
-    !questionElement ||
-    !optionsContainer ||
-    !nextButton ||
-    !feedbackElement ||
-    !resultsContainer ||
-    !resultsList ||
-    !restartButton ||
-    !progressContainer ||
-    !progressList
-  ) {
-    console.error(
-      "Un o més elements del DOM del qüestionari no es van trobar. Assegura't que el teu HTML té els IDs correctes."
-    );
-    return;
-  }
-
-  let currentModuleKey = null;
-  let currentModuleData = null;
-  let currentQuestionIndex = 0;
-  let correctAnswers = 0;
-  let currentQuestion;
-  let currentUser = null; // Variable per guardar l'usuari actual
-
-  const CORRECT_THRESHOLD = 3; // NOU: Llindar de 3 respostes correctes
-  const ONE_MONTH_IN_MS = 30 * 24 * 60 * 60 * 1000;
-
-  /**
-   * Obté l'usuari actual logat a Supabase.
-   */
-  async function getCurrentUser() {
-    const {
-      data: { user },
-    } = await _supabase.auth.getUser();
-    if (!user) {
-      manejarAlerta("No hi ha cap usuari autenticat.", "error");
-      return null;
-    }
-    return user;
-  }
-
-  /**
-   * Funció per actualitzar el progrés de l'usuari a la base de dades.
-   */
-  /**
-   * Funció per actualitzar el progrés de l'usuari a la base de dades.
-   */
-  async function updateProgress(userId, wordId, isCorrect) {
-    if (!userId || !wordId) {
+    // VERIFICACIÓ: Assegurem que tots els elements existeixen.
+    if (
+      !moduleSelectionDiv ||
+      !lessonsContainer ||
+      !quizContainer ||
+      !questionElement ||
+      !optionsContainer ||
+      !nextButton ||
+      !feedbackElement ||
+      !resultsContainer ||
+      !resultsList ||
+      !restartButton ||
+      !progressContainer ||
+      !progressList ||
+      !sidebar
+    ) {
       console.error(
-        "No es pot actualitzar el progrés: l'ID d'usuari o de la paraula no estan definits."
+        "Un o més elements del DOM del qüestionari no es van trobar. Assegura't que el teu HTML té els IDs correctes."
       );
       return;
     }
 
-    const { data: existingProgress, error: fetchError } = await _supabase
-      .from("progres_usuari")
-      .select("vegades_correctes, vegades_incorrectes, estat") // També busquem l'estat per una millor lògica
-      .eq("id_usuari", userId)
-      .eq("id_paraula", wordId)
-      .single();
+    sidebar.style.display = "block";
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      console.error("Error al buscar el progrés existent:", fetchError);
-      return;
+    let currentModuleKey = null;
+    let currentModuleData = null;
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+    let currentQuestion;
+    let currentUser = null;
+
+    const CORRECT_THRESHOLD = 3;
+    const ONE_MONTH_IN_MS = 30 * 24 * 60 * 60 * 1000;
+
+    async function getCurrentUser() {
+      const {
+        data: { user },
+        error,
+      } = await _supabase.auth.getUser();
+      if (error || !user) {
+        manejarAlerta("No hi ha cap usuari autenticat.", "error");
+        return null;
+      }
+      return user;
     }
 
-    // Si no hi ha progrés preexistent, creem els valors per defecte
-    const currentCorrect = existingProgress
-      ? existingProgress.vegades_correctes
-      : 0;
-    const currentIncorrect = existingProgress
-      ? existingProgress.vegades_incorrectes
-      : 0;
-
-    let newCorrect = currentCorrect;
-    let newIncorrect = currentIncorrect;
-
-    if (isCorrect) {
-      // Si la resposta és CORRECTA:
-      if (currentIncorrect > 0) {
-        // Si hi ha errors acumulats, els reduïm abans de sumar respostes correctes
-        newIncorrect = currentIncorrect - 1;
-      } else {
-        // Si no hi ha errors, sumem una resposta correcta
-        newCorrect = currentCorrect + 1;
+    async function updateProgress(userId, wordId, isCorrect) {
+      if (!userId || !wordId) {
+        console.error(
+          "No es pot actualitzar el progrés: l'ID d'usuari o de la paraula no estan definits."
+        );
+        return;
       }
-    } else {
-      // Si la resposta és INCORRECTA:
-      // Sempre sumem un error
-      newIncorrect = currentIncorrect + 1;
-      // Si l'estat era 'apresa', el revertim a 'practicant'
-      if (existingProgress?.estat === "apresa") {
-        const { error: updateStateError } = await _supabase
+
+      const { data: existingProgress, error: fetchError } = await _supabase
+        .from("progres_usuari")
+        .select("vegades_correctes, vegades_incorrectes, estat")
+        .eq("id_usuari", userId)
+        .eq("id_paraula", wordId)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        console.error("Error al buscar el progrés existent:", fetchError);
+        return;
+      }
+
+      const currentCorrect = existingProgress
+        ? existingProgress.vegades_correctes
+        : 0;
+      const currentIncorrect = existingProgress
+        ? existingProgress.vegades_incorrectes
+        : 0;
+
+      let newCorrect = currentCorrect;
+      let newIncorrect = currentIncorrect;
+
+      if (isCorrect) {
+        if (currentIncorrect > 0) {
+          newIncorrect = currentIncorrect - 1;
+        } else {
+          newCorrect = currentCorrect + 1;
+        }
+      } else {
+        newIncorrect = currentIncorrect + 1;
+        if (existingProgress?.estat === "apresa") {
+          const { error: updateStateError } = await _supabase
+            .from("progres_usuari")
+            .update({
+              estat: "practicant",
+              vegades_correctes: 0,
+            })
+            .eq("id_usuari", userId)
+            .eq("id_paraula", wordId);
+          if (updateStateError) {
+            console.error("Error al actualitzar l'estat:", updateStateError);
+          }
+        }
+      }
+
+      const newState =
+        newCorrect >= CORRECT_THRESHOLD ? "apresa" : "practicant";
+
+      if (newState === "apresa") {
+        newIncorrect = 0;
+      }
+
+      const dataToUpdate = {
+        vegades_correctes: newCorrect,
+        vegades_incorrectes: newIncorrect,
+        estat: newState,
+        data_ultima_practica: new Date().toISOString(),
+      };
+
+      if (existingProgress) {
+        const { error: updateError } = await _supabase
           .from("progres_usuari")
-          .update({ estat: "practicant", vegades_correctes: 0 })
+          .update(dataToUpdate)
           .eq("id_usuari", userId)
           .eq("id_paraula", wordId);
-        if (updateStateError) {
-          console.error("Error al actualitzar l'estat:", updateStateError);
+
+        if (updateError) {
+          console.error("Error al actualitzar el progrés:", updateError);
+        }
+      } else {
+        const { error: insertError } = await _supabase
+          .from("progres_usuari")
+          .insert([
+            {
+              ...dataToUpdate,
+              id_usuari: userId,
+              id_paraula: wordId,
+            },
+          ]);
+
+        if (insertError) {
+          console.error("Error al insertar el progrés:", insertError);
         }
       }
     }
 
-    // La lògica de l'estat 'apresa' es basa en el comptador de respostes correctes
-    const newState = newCorrect >= CORRECT_THRESHOLD ? "apresa" : "practicant";
-
-    // Si la paraula arriba a 'apresa', resetejem el comptador d'errors.
-    if (newState === "apresa") {
-      newIncorrect = 0;
-    }
-
-    // Operació d'actualització o inserció a la base de dades
-    const dataToUpdate = {
-      vegades_correctes: newCorrect,
-      vegades_incorrectes: newIncorrect,
-      estat: newState,
-      data_ultima_practica: new Date().toISOString(),
-    };
-
-    if (existingProgress) {
-      const { error: updateError } = await _supabase
-        .from("progres_usuari")
-        .update(dataToUpdate)
-        .eq("id_usuari", userId)
-        .eq("id_paraula", wordId);
-
-      if (updateError) {
-        console.error("Error al actualitzar el progrés:", updateError);
-      }
-    } else {
-      const { error: insertError } = await _supabase
-        .from("progres_usuari")
-        .insert([
-          {
-            ...dataToUpdate,
-            id_usuari: userId,
-            id_paraula: wordId,
-          },
-        ]);
-
-      if (insertError) {
-        console.error("Error al insertar el progrés:", insertError);
-      }
-    }
-  }
-
-  /**
-   * Obté la llista de nivells (A1, B2, etc.) únics de la taula 'vocabulari'.
-   */
-  async function fetchLevelsFromSupabase() {
-    const { data, error } = await _supabase
-      .from("vocabulari")
-      .select("nivel_base")
-      .order("nivel_base", { ascending: true });
-
-    if (error) {
-      console.error("Error al obtener los niveles:", error.message);
-      return [];
-    }
-
-    const uniqueLevels = [...new Set(data.map((item) => item.nivel_base))];
-    return uniqueLevels;
-  }
-
-  /**
-   * Obté la llista de temes per a un nivell específic.
-   */
-  async function fetchTopicsFromSupabase(level) {
-    let allTopics = [];
-    let offset = 0;
-    const limit = 1000;
-
-    while (true) {
+    async function fetchLevelsFromSupabase() {
       const { data, error } = await _supabase
         .from("vocabulari")
-        .select("tema")
-        .eq("nivel_base", level)
-        .range(offset, offset + limit - 1)
-        .order("tema", { ascending: true });
+        .select("nivel_base")
+        .order("nivel_base", {
+          ascending: true,
+        });
 
       if (error) {
-        console.error(
-          `Error al obtener los temas para ${level}:`,
-          error.message
-        );
-        break; // Sortim del bucle en cas d'error
+        console.error("Error al obtener los niveles:", error.message);
+        return [];
       }
 
-      // Afegeix les dades rebudes al teu array de tots els temes
-      allTopics.push(...data);
+      const uniqueLevels = [...new Set(data.map((item) => item.nivel_base))];
+      return uniqueLevels;
+    }
 
-      // Si la quantitat de dades rebuda és menor que el límit, vol dir que hem arribat al final
-      if (data.length < limit) {
-        break;
+    async function fetchTopicsFromSupabase(level) {
+      let allTopics = [];
+      let offset = 0;
+      const limit = 1000;
+
+      while (true) {
+        const { data, error } = await _supabase
+          .from("vocabulari")
+          .select("tema")
+          .eq("nivel_base", level)
+          .range(offset, offset + limit - 1)
+          .order("tema", {
+            ascending: true,
+          });
+
+        if (error) {
+          console.error(
+            `Error al obtener los temas para ${level}:`,
+            error.message
+          );
+          break;
+        }
+
+        allTopics.push(...data);
+
+        if (data.length < limit) {
+          break;
+        }
+
+        offset += limit;
       }
 
-      offset += limit;
+      const uniqueTopics = [...new Set(allTopics.map((item) => item.tema))];
+      return uniqueTopics;
     }
 
-    const uniqueTopics = [...new Set(allTopics.map((item) => item.tema))];
-    return uniqueTopics;
-  }
+    async function obtenerExplicacion(nivel, tema) {
+      const { data: explicacion, error } = await _supabase
+        .from("explicaciones")
+        .select("*")
+        .eq("nivel_base", nivel)
+        .eq("tema", tema)
+        .maybeSingle();
 
-  /**
-   * Obté una explicació específica de la taula 'explicaciones'.
-   * @param {string} nivel - El nivell (p.ex., "A1").
-   * @param {string} tema - El tema (p.ex., "Verbos").
-   */
-  async function obtenerExplicacion(nivel, tema) {
-    const { data: explicacion, error } = await _supabase
-      .from("explicaciones")
-      .select("*")
-      .eq("nivel_base", nivel)
-      .eq("tema", tema)
-      .single();
+      if (error) {
+        console.error("Error en la consulta de explicación:", error);
+        return null;
+      }
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error al obtener la explicación:", error);
-      return null;
+      return explicacion;
     }
 
-    return explicacion;
-  }
+    async function fetchVocabularyAndLesson(level, topic) {
+      const { data: vocabData, error: vocabError } = await _supabase
+        .from("vocabulari")
+        .select("*")
+        .eq("nivel_base", level)
+        .eq("tema", topic)
+        .order("id", {
+          ascending: true,
+        });
 
-  /**
-   * Obté totes les paraules i dades per a un mòdul específic.
-   * @param {string} level - El nivell del mòdul (p.ex. "A1").
-   * @param {string} topic - El tema del mòdul (p.ex. "Adjetivos").
-   */
-  async function fetchVocabularyAndLesson(level, topic) {
-    const { data: vocabData, error: vocabError } = await _supabase
-      .from("vocabulari")
-      .select("*")
-      .eq("nivel_base", level)
-      .eq("tema", topic)
-      .order("id", { ascending: true });
+      if (vocabError) {
+        console.error("Error al obtener el vocabulario:", vocabError.message);
+        return [];
+      }
 
-    if (vocabError) {
-      console.error("Error al obtener el vocabulario:", vocabError.message);
-      return [];
+      const explicacion = await obtenerExplicacion(level, topic);
+      const fullModuleData = vocabData.map((vocabItem) => ({
+        ...vocabItem,
+        explicaciones: explicacion,
+      }));
+
+      return fullModuleData;
     }
 
-    const explicacion = await obtenerExplicacion(level, topic);
-    const fullModuleData = vocabData.map((vocabItem) => ({
-      ...vocabItem,
-      explicaciones: explicacion,
-    }));
+    async function populateModuleSelection() {
+      const availableLevels = await fetchLevelsFromSupabase();
+      moduleSelectionDiv.innerHTML = "<h2>Selecciona un nivel:</h2>";
 
-    return fullModuleData;
-  }
+      quizContainer.style.display = "none";
+      lessonsContainer.style.display = "none";
+      resultsContainer.style.display = "none";
+      moduleSelectionDiv.style.display = "block";
+      sidebar.style.display = "block";
 
-  /**
-   * Omple la selecció de mòduls per nivell.
-   */
-  async function populateModuleSelection() {
-    const availableLevels = await fetchLevelsFromSupabase();
-    moduleSelectionDiv.innerHTML = "<h2>Selecciona un nivel:</h2>";
-
-    quizContainer.style.display = "none";
-    lessonsContainer.style.display = "none";
-    resultsContainer.style.display = "none";
-    moduleSelectionDiv.style.display = "block";
-
-    availableLevels.forEach((levelName) => {
-      const button = document.createElement("button");
-      button.textContent = levelName;
-      button.addEventListener("click", () => {
-        populateTopicSelection(levelName);
+      availableLevels.forEach((levelName) => {
+        const button = document.createElement("button");
+        button.textContent = levelName;
+        button.addEventListener("click", () => {
+          loadModule(levelName);
+        });
+        moduleSelectionDiv.appendChild(button);
       });
-      moduleSelectionDiv.appendChild(button);
-    });
-  }
-
-  /**
-   * Omple la selecció de temes per a un nivell concret.
-   */
-  async function populateTopicSelection(levelName) {
-    // Obtenim els temes de la base de dades
-    const availableTopics = await fetchTopicsFromSupabase(levelName);
-
-    // 1. Netejar completament el contenidor
-    // Aquesta línia és clau per assegurar-se que no hi hagi contingut anterior
-    moduleSelectionDiv.innerHTML = "";
-
-    // 2. Afegir l'encapçalament i el botó de "Tornar"
-    const heading = document.createElement("h2");
-    heading.textContent = `Selecciona un tema para ${levelName}:`;
-    moduleSelectionDiv.appendChild(heading);
-
-    const backButton = document.createElement("button");
-    backButton.textContent = "Volver a Niveles";
-    backButton.addEventListener("click", populateModuleSelection);
-    moduleSelectionDiv.appendChild(backButton);
-
-    // 3. Afegir tots els botons dels temes
-    availableTopics.forEach((topicName) => {
-      const button = document.createElement("button");
-      button.textContent = topicName;
-      button.addEventListener("click", async () => {
-        loadModule(`${levelName}${topicName}`);
-      });
-      // Afegeix cada botó al final del contenidor
-      moduleSelectionDiv.appendChild(button);
-    });
-  }
-
-  /**
-   * Funció per carregar i mostrar el contingut de les lliçons a la barra lateral.
-   * @param {string} title - El títol de la lliçó.
-   * @param {string} content - El contingut de la lliçó en format HTML.
-   */
-  async function cargarLeccion(title, content) {
-    const lessonsListContainer = document.getElementById("lessons-list");
-    lessonsListContainer.innerHTML = "";
-
-    if (title && content) {
-      const titleElement = document.createElement("h3");
-      titleElement.textContent = title;
-      lessonsListContainer.appendChild(titleElement);
-      lessonsListContainer.innerHTML += content;
-    } else {
-      lessonsListContainer.innerHTML = `<p>No s'ha trobat contingut per a aquesta lliçó.</p>`;
-    }
-  }
-
-  /**
-   * Prepara les dades del qüestionari basant-se en el progrés de l'usuari a la base de dades.
-   * @param {string} level - El nivell del mòdul (p.ex. "A1").
-   * @param {string} topic - El tema del mòdul (p.ex. "Adjetivos").
-   */
-  async function prepareModuleData(level, topic) {
-    if (!currentUser) {
-      manejarAlerta("Inicia sessió per veure el teu progrés.", "error");
-      return [];
     }
 
-    // 1. Obtenir totes les paraules del mòdul
-    const { data: vocabData, error: vocabError } = await _supabase
-      .from("vocabulari")
-      .select("id, english, spanish, example, nivel_base, example_spanish")
-      .eq("nivel_base", level)
-      .eq("tema", topic);
+    async function cargarLeccion(title, content) {
+      const lessonsListContainer = document.getElementById("lessons-list");
+      lessonsListContainer.innerHTML = "";
 
-    if (vocabError) {
-      console.error("Error al obtener vocabulario:", vocabError);
-      return [];
-    }
-
-    const wordIds = vocabData.map((word) => word.id);
-
-    // 2. Obtenir el progrés de l'usuari per a aquestes paraules
-    const { data: progressData, error: progressError } = await _supabase
-      .from("progres_usuari")
-      .select(
-        "id_paraula, vegades_correctes, vegades_incorrectes, estat, data_ultima_practica"
-      )
-      .eq("id_usuari", currentUser.id)
-      .in("id_paraula", wordIds);
-
-    if (progressError && progressError.code !== "PGRST116") {
-      console.error("Error al obtener el progreso:", progressError);
-      return [];
-    }
-
-    // Convertir l'array de progrés en un mapa per a un accés ràpid
-    const progressMap = new Map(
-      progressData.map((item) => [item.id_paraula, item])
-    );
-
-    const allWords = vocabData.map((word) => {
-      // Obtenim l'estat actual del progrés
-      const progress = progressMap.get(word.id) || {
-        vegades_correctes: 0,
-        vegades_incorrectes: 0,
-        estat: "nova",
-      };
-
-      // Definim la direcció de la pregunta segons l'estat de la paraula
-      const direction = progress.estat === "apresa" ? "es-en" : "en-es";
-
-      return {
-        ...word,
-        progress,
-        direction, // Afegeix la nova propietat de direcció
-      };
-    });
-
-    // 3. Implementar la lògica de prioritat
-    const noPracticed = allWords.filter(
-      (word) => word.progress.estat === "nova"
-    );
-    const needsPractice = allWords.filter(
-      (word) =>
-        word.progress.estat !== "nova" && word.progress.vegades_incorrectes > 0
-    );
-
-    const learnedWords = allWords.filter(
-      (word) => word.progress.estat === "apresa"
-    );
-    const readyForReview = learnedWords.filter((word) => {
-      const lastPracticed = new Date(
-        word.progress.data_ultima_practica
-      ).getTime();
-      return Date.now() - lastPracticed > ONE_MONTH_IN_MS;
-    });
-
-    const rest = allWords.filter(
-      (word) =>
-        word.progress.estat === "practicant" &&
-        word.progress.vegades_incorrectes === 0
-    );
-
-    needsPractice.sort(
-      (a, b) => b.progress.vegades_incorrectes - a.progress.vegades_incorrectes
-    );
-
-    const shuffledRest = rest.sort(() => Math.random() - 0.5);
-    const shuffledReview = readyForReview.sort(() => Math.random() - 0.5);
-
-    return [
-      ...noPracticed,
-      ...needsPractice,
-      ...shuffledRest,
-      ...shuffledReview,
-    ];
-  }
-
-  async function loadModule(moduleKey) {
-    currentModuleKey = moduleKey;
-
-    const [level, topic] = moduleKey
-      .match(/^(A[1-2]|B[1-2]|C[1-2])(.*)$/)
-      .slice(1);
-
-    const explicacion = await obtenerExplicacion(level, topic);
-    if (explicacion) {
-      cargarLeccion(explicacion.titulo_leccion, explicacion.contenido_html);
-    } else {
-      cargarLeccion(
-        "Sense Explicació",
-        "<p>No hi ha una lliçó disponible per a aquest mòdul.</p>"
-      );
-    }
-
-    currentModuleData = await prepareModuleData(level, topic);
-    currentQuestionIndex = 0;
-    correctAnswers = 0;
-
-    moduleSelectionDiv.style.display = "none";
-    lessonsContainer.style.display = "block";
-    resultsContainer.style.display = "none";
-    quizContainer.style.display = "block";
-
-    loadQuestion();
-  }
-
-function loadQuestion() {
-  if (currentQuestionIndex < currentModuleData.length) {
-    currentQuestion = currentModuleData[currentQuestionIndex];
-    optionsContainer.innerHTML = "";
-    feedbackElement.textContent = "";
-
-    let questionText,
-      exampleText,
-      wordToPlay,
-      exampleToPlay,
-      languageCode,
-      correctAnswer,
-      allOptions;
-
-    if (currentQuestion.direction === "en-es") {
-      // Nivel 1: Traducción de inglés a español
-      questionText = `¿Cuál es la traducción de "${currentQuestion.english}"?`;
-      exampleText = currentQuestion.example;
-      wordToPlay = currentQuestion.english;
-      exampleToPlay = currentQuestion.example;
-      languageCode = "en-US";
-      correctAnswer = currentQuestion.spanish;
-      allOptions = currentModuleData.map((item) => item.spanish);
-    } else {
-      // Nivel 2: Traducción de español a inglés (ya aprendida)
-      questionText = `¿Cuál es la traducción de "${currentQuestion.spanish}"?`;
-      exampleText = currentQuestion.example_spanish;
-      wordToPlay = currentQuestion.spanish;
-      exampleToPlay = currentQuestion.example_spanish;
-      languageCode = "es-ES";
-      correctAnswer = currentQuestion.english;
-      allOptions = currentModuleData.map((item) => item.english);
-    }
-
-    // Renderizar la pregunta y el ejemplo
-    questionElement.textContent = questionText;
-    const exampleElement = document.createElement("p");
-    exampleElement.textContent = `Ejemplo: ${exampleText}`;
-    questionElement.appendChild(document.createElement("br"));
-    questionElement.appendChild(exampleElement);
-
-    // Reproducir primero la palabra principal y luego el ejemplo
-    playWord(wordToPlay, languageCode);
-    setTimeout(() => {
-      playWord(exampleToPlay, languageCode);
-    }, 500); // Pequeño retraso para que suene más natural
-
-    // Generar opciones y renderizar los botones
-    const randomOptions = new Set();
-    randomOptions.add(correctAnswer);
-    while (randomOptions.size < 4) {
-      const randomIndex = Math.floor(Math.random() * allOptions.length);
-      const randomWord = allOptions[randomIndex];
-      randomOptions.add(randomWord);
-    }
-    const optionsArray = Array.from(randomOptions).sort(
-      () => Math.random() - 0.5
-    );
-
-    optionsArray.forEach((option) => {
-      const button = document.createElement("button");
-      button.textContent = option;
-      button.addEventListener("click", () =>
-        checkAnswer(option, correctAnswer)
-      );
-      optionsContainer.appendChild(button);
-    });
-  } else {
-    showModuleResults();
-  }
-}
-
-  async function checkAnswer(selectedAnswer, correctAnswer) {
-    const buttons = optionsContainer.querySelectorAll("button");
-    buttons.forEach((button) => {
-      button.disabled = true;
-      if (button.textContent === correctAnswer) {
-        button.style.backgroundColor = "#5cb85c";
-        button.style.color = "white";
-      } else if (button.textContent === selectedAnswer) {
-        button.style.backgroundColor = "#d9534f";
-        button.style.color = "white";
-      }
-    });
-
-    const isCorrect = selectedAnswer === correctAnswer;
-
-    if (currentUser) {
-      if (isCorrect) {
-        await updateProgress(currentUser.id, currentQuestion.id, true);
+      if (title && content) {
+        const titleElement = document.createElement("h3");
+        titleElement.textContent = title;
+        lessonsListContainer.appendChild(titleElement);
+        lessonsListContainer.innerHTML += content;
       } else {
-        await updateProgress(currentUser.id, currentQuestion.id, false);
+        lessonsListContainer.innerHTML = `<p>No s'ha trobat contingut per a aquesta lliçó.</p>`;
       }
-      await updateProgressDisplay();
     }
 
-    currentQuestionIndex++;
-    if (currentQuestionIndex < currentModuleData.length) {
-      setTimeout(loadQuestion, 1500);
-    } else {
-      setTimeout(showModuleResults, 1500);
+    async function prepareModuleData(level) {
+      if (!currentUser) {
+        manejarAlerta("Inicia sessió per veure el teu progrés.", "error");
+        return [];
+      }
+
+      const { data: topicsData, error: topicsError } = await _supabase
+        .from("vocabulari")
+        .select("tema, orden_tema")
+        .eq("nivel_base", level)
+        .order("orden_tema", {
+          ascending: true,
+        })
+        .limit(1000);
+
+      if (topicsError) {
+        console.error("Error al obtener los temas:", topicsError);
+        return [];
+      }
+      const uniqueOrderedTopics = [
+        ...new Set(topicsData.map((item) => item.tema)),
+      ];
+
+      for (const topic of uniqueOrderedTopics) {
+        const { data: vocabData, error: vocabError } = await _supabase
+          .from("vocabulari")
+          .select(
+            "id, english, spanish, example, nivel_base, example_spanish, tema, orden_tema"
+          )
+          .eq("nivel_base", level)
+          .eq("tema", topic);
+
+        if (vocabError) {
+          console.error(
+            `Error al obtener vocabulario del tema ${topic}:`,
+            vocabError
+          );
+          continue;
+        }
+
+        const wordIds = vocabData.map((word) => word.id);
+
+        const { data: progressData, error: progressError } = await _supabase
+          .from("progres_usuari")
+          .select(
+            "id_paraula, vegades_correctes, vegades_incorrectes, estat, data_ultima_practica"
+          )
+          .eq("id_usuari", currentUser.id)
+          .in("id_paraula", wordIds);
+
+        if (progressError && progressError.code !== "PGRST116") {
+          console.error(
+            `Error al obtener el progreso del tema ${topic}:`,
+            progressError
+          );
+          continue;
+        }
+
+        const progressMap = new Map(
+          progressData.map((item) => [item.id_paraula, item])
+        );
+
+        const wordsNeedingPractice = vocabData
+          .map((word) => {
+            const progress = progressMap.get(word.id) || {
+              vegades_correctes: 0,
+              vegades_incorrectes: 0,
+              estat: "nova",
+              data_ultima_practica: null,
+            };
+            const direction = progress.estat === "apresa" ? "es-en" : "en-es";
+            return {
+              ...word,
+              progress,
+              direction,
+            };
+          })
+          .filter(
+            (word) =>
+              word.progress.estat !== "apresa" ||
+              new Date() - new Date(word.progress.data_ultima_practica) >
+                ONE_MONTH_IN_MS
+          );
+
+        if (wordsNeedingPractice.length > 0) {
+          wordsNeedingPractice.sort((a, b) => {
+            if (a.progress.vegades_incorrectes > b.progress.vegades_incorrectes)
+              return -1;
+            if (a.progress.vegades_incorrectes < b.progress.vegades_incorrectes)
+              return 1;
+            if (a.progress.estat === "nova" && b.progress.estat !== "nova")
+              return -1;
+            if (a.progress.estat !== "nova" && b.progress.estat === "nova")
+              return 1;
+            return 0;
+          });
+          return wordsNeedingPractice;
+        }
+      }
+
+      return [];
     }
-  }
 
-  function showModuleResults() {
-    quizContainer.style.display = "none";
-    resultsContainer.style.display = "block";
-    resultsList.innerHTML = "";
+    async function loadModule(level) {
+      currentModuleKey = level;
 
-    const totalQuestions = currentModuleData.length;
-    const percentage = (correctAnswers / totalQuestions) * 100;
-    const listItem = document.createElement("li");
-    listItem.textContent = `Resultados del módulo ${currentModuleKey}: Obtuviste ${correctAnswers} de ${totalQuestions} (${percentage.toFixed(
-      2
-    )}%) respuestas correctas.`;
-    resultsList.appendChild(listItem);
+      sidebar.style.display = "block";
 
+      currentModuleData = await prepareModuleData(level);
+
+      console.log("Datos del módulo cargados:", currentModuleData);
+
+      if (currentModuleData.length === 0) {
+        manejarAlerta("No hay palabras para practicar en este nivel.", "info");
+        populateModuleSelection();
+        return;
+      }
+
+      moduleSelectionDiv.style.display = "none";
+
+      lessonsContainer.style.display = "block";
+      quizContainer.style.display = "block";
+
+      const explicacion = await obtenerExplicacion(level, "General");
+      if (explicacion) {
+        cargarLeccion(explicacion.titulo_leccion, explicacion.contenido_html);
+      } else {
+        cargarLeccion(
+          "Sense Explicació",
+          "<p>No hi ha una lliçó disponible per a aquest mòdul.</p>"
+        );
+      }
+
+      currentQuestionIndex = 0;
+      correctAnswers = 0;
+
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      if (currentQuestionIndex < currentModuleData.length) {
+        currentQuestion = currentModuleData[currentQuestionIndex];
+        optionsContainer.innerHTML = "";
+        feedbackElement.textContent = "";
+
+        let questionText,
+          exampleText,
+          wordToPlay,
+          exampleToPlay,
+          languageCode,
+          correctAnswer,
+          allOptions;
+
+        if (currentQuestion.direction === "en-es") {
+          questionText = `¿Cuál es la traducción de "${currentQuestion.english}"?`;
+          exampleText = currentQuestion.example;
+          wordToPlay = currentQuestion.english;
+          exampleToPlay = currentQuestion.example;
+          languageCode = "en-US";
+          correctAnswer = currentQuestion.spanish;
+          allOptions = currentModuleData.map((item) => item.spanish);
+        } else {
+          questionText = `¿Cuál es la traducción de "${currentQuestion.spanish}"?`;
+          exampleText = currentQuestion.example_spanish;
+          wordToPlay = currentQuestion.spanish;
+          exampleToPlay = currentQuestion.question_spanish;
+          languageCode = "es-ES";
+          correctAnswer = currentQuestion.english;
+          allOptions = currentModuleData.map((item) => item.english);
+        }
+
+        questionElement.textContent = questionText;
+        const exampleElement = document.createElement("p");
+        exampleElement.textContent = `Ejemplo: ${exampleText}`;
+        questionElement.appendChild(document.createElement("br"));
+        questionElement.appendChild(exampleElement);
+
+        playWord(wordToPlay, languageCode);
+        setTimeout(() => {
+          playWord(exampleToPlay, languageCode);
+        }, 500);
+
+        const randomOptions = new Set();
+        randomOptions.add(correctAnswer);
+        while (randomOptions.size < 4) {
+          const randomIndex = Math.floor(Math.random() * allOptions.length);
+          const randomWord = allOptions[randomIndex];
+          randomOptions.add(randomWord);
+        }
+        const optionsArray = Array.from(randomOptions).sort(
+          () => Math.random() - 0.5
+        );
+
+        optionsArray.forEach((option) => {
+          const button = document.createElement("button");
+          button.textContent = option;
+          button.addEventListener("click", () =>
+            checkAnswer(option, correctAnswer)
+          );
+          optionsContainer.appendChild(button);
+        });
+      } else {
+        showModuleResults();
+      }
+    }
+
+    async function checkAnswer(selectedAnswer, correctAnswer) {
+      const buttons = optionsContainer.querySelectorAll("button");
+      buttons.forEach((button) => {
+        button.disabled = true;
+        if (button.textContent === correctAnswer) {
+          button.style.backgroundColor = "#5cb85c";
+          button.style.color = "white";
+        } else if (button.textContent === selectedAnswer) {
+          button.style.backgroundColor = "#d9534f";
+          button.style.color = "white";
+        }
+      });
+
+      const isCorrect = selectedAnswer === correctAnswer;
+
+      if (currentUser) {
+        if (isCorrect) {
+          await updateProgress(currentUser.id, currentQuestion.id, true);
+        } else {
+          await updateProgress(currentUser.id, currentQuestion.id, false);
+        }
+
+        await updateProgressDisplay();
+      }
+
+      currentQuestionIndex++;
+      if (currentQuestionIndex < currentModuleData.length) {
+        setTimeout(loadQuestion, 1500);
+      } else {
+        setTimeout(showModuleResults, 1500);
+      }
+    }
+
+    async function updateProgressDisplay() {
+      progressContainer.style.display = "block";
+      progressList.innerHTML = "";
+
+      if (!currentUser) {
+        progressList.innerHTML =
+          "<li>Inicia sessió per veure el teu progrés.</li>";
+        return;
+      }
+
+      const { data: userProgress, error } = await _supabase
+        .from("progres_usuari")
+        .select(
+          "vegades_correctes, vegades_incorrectes, estat, vocabulari(english, spanish, nivel_base)"
+        )
+        .eq("id_usuari", currentUser.id)
+        .order("data_ultima_practica", {
+          ascending: false,
+        });
+
+      if (error) {
+        console.error("Error al obtener el progreso del usuario:", error);
+        progressList.innerHTML = "<li>Error en carregar el progrés.</li>";
+        return;
+      }
+
+      if (userProgress.length > 0) {
+        const lastPracticedLevel = userProgress[0].vocabulari.nivel_base;
+        await sendProgressDataToSvg(lastPracticedLevel, userProgress);
+      } else {
+        progressList.innerHTML =
+          "<li>Encara no has practicat cap paraula.</li>";
+        await sendProgressDataToSvg("A1", []);
+      }
+
+      const learnedWords = userProgress.filter(
+        (item) => item.estat === "apresa"
+      );
+      if (learnedWords.length > 0) {
+        progressList.innerHTML += "<h3>Paraules apreses:</h3>";
+        learnedWords.forEach((item) => {
+          progressList.innerHTML += `
+            <li>
+                <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
+                <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
+            </li>
+          `;
+        });
+      }
+
+      const needsPracticeWords = userProgress.filter(
+        (item) => item.estat !== "apresa"
+      );
+      if (needsPracticeWords.length > 0) {
+        progressList.innerHTML += "<h3>Paraules que necessiten pràctica:</h3>";
+        needsPracticeWords.forEach((item) => {
+          progressList.innerHTML += `
+            <li>
+                <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
+                <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
+            </li>
+          `;
+        });
+      }
+    }
+
+    // Nueva función para enviar los datos al SVG estático
+    async function sendProgressDataToSvg(level, userProgress) {
+      // 1. Calcular los datos de progreso
+      const { data: allWords, error: allWordsError } = await _supabase
+        .from("vocabulari")
+        .select("id")
+        .eq("nivel_base", level);
+
+      if (allWordsError) {
+        console.error(
+          "Error al obtener todas las palabras para el gráfico:",
+          allWordsError
+        );
+        return;
+      }
+
+      const totalWords = allWords.length;
+      if (totalWords === 0) {
+        console.log(
+          "No hay palabras en la base de datos para este nivel. No se enviarán datos al SVG."
+        );
+        return;
+      }
+
+      let aprendidas = 0;
+      let incorrectas = 0;
+      let enProgreso = 0;
+      let noPracticadas = totalWords;
+
+      if (userProgress && userProgress.length > 0) {
+        noPracticadas = totalWords - userProgress.length;
+        userProgress.forEach((item) => {
+          if (item.estat === "apresa") {
+            aprendidas++;
+          } else if (item.vegades_incorrectes > 0) {
+            incorrectas++;
+          } else {
+            enProgreso++;
+          }
+        });
+      }
+
+      const aprendidasPerc = (aprendidas / totalWords) * 100;
+      const incorrectasPerc = (incorrectas / totalWords) * 100;
+      const enProgresoPerc = (enProgreso / totalWords) * 100;
+      const noPracticadasPerc = (noPracticadas / totalWords) * 100;
+
+      // 2. Seleccionar los elementos del SVG estático por su ID
+      const svg = document.getElementById("progress-chart-svg");
+      const noPracticadasPath = document.getElementById("no-practicadas-path");
+      const incorrectasPath = document.getElementById("incorrectas-path");
+      const enProgresoPath = document.getElementById("en-progreso-path");
+      const aprendidasPath = document.getElementById("aprendidas-path");
+      const levelText = document.getElementById("level-text");
+
+      const textContainer = document.getElementById("progress-text");
+      if (textContainer) {
+        textContainer.innerHTML = `
+          <p>Nivel: ${level}</p>
+          <p>Aprendidas: ${aprendidas} (${aprendidasPerc.toFixed(1)}%)</p>
+          <p>Incorrectas: ${incorrectas} (${incorrectasPerc.toFixed(1)}%)</p>
+          <p>En Progreso: ${enProgreso} (${enProgresoPerc.toFixed(1)}%)</p>
+          <p>No Practicadas: ${noPracticadas} (${noPracticadasPerc.toFixed(
+          1
+        )}%)</p>
+        `;
+      }
+
+      if (!svg || !levelText) {
+        console.error(
+          "No se encontraron los elementos SVG. Asegúrate de que tu HTML tenga los IDs correctos."
+        );
+        return;
+      }
+
+      levelText.textContent = level;
+
+      // 3. Modificar los atributos de los elementos para reflejar los datos
+      let cumulativePercent = 0;
+
+      if (noPracticadasPath) {
+        const d = describeArc(
+          50,
+          50,
+          40,
+          cumulativePercent * 3.6,
+          (cumulativePercent + noPracticadasPerc) * 3.6
+        );
+        noPracticadasPath.setAttribute("d", d);
+        cumulativePercent += noPracticadasPerc;
+      }
+
+      if (incorrectasPath) {
+        const d = describeArc(
+          50,
+          50,
+          40,
+          cumulativePercent * 3.6,
+          (cumulativePercent + incorrectasPerc) * 3.6
+        );
+        incorrectasPath.setAttribute("d", d);
+        cumulativePercent += incorrectasPerc;
+      }
+
+      if (enProgresoPath) {
+        const d = describeArc(
+          50,
+          50,
+          40,
+          cumulativePercent * 3.6,
+          (cumulativePercent + enProgresoPerc) * 3.6
+        );
+        enProgresoPath.setAttribute("d", d);
+        cumulativePercent += enProgresoPerc;
+      }
+
+      if (aprendidasPath) {
+        const d = describeArc(
+          50,
+          50,
+          40,
+          cumulativePercent * 3.6,
+          (cumulativePercent + aprendidasPerc) * 3.6
+        );
+        aprendidasPath.setAttribute("d", d);
+      }
+    }
+
+    function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+      const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+      return {
+        x: centerX + radius * Math.cos(angleInRadians),
+        y: centerY + radius * Math.sin(angleInRadians),
+      };
+    }
+
+    function describeArc(x, y, radius, startAngle, endAngle) {
+      if (startAngle === endAngle) return `M ${x} ${y} Z`;
+      const start = polarToCartesian(x, y, radius, endAngle);
+      const end = polarToCartesian(x, y, radius, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+      const d = [
+        "M",
+        x,
+        y,
+        "L",
+        start.x,
+        start.y,
+        "A",
+        radius,
+        radius,
+        0,
+        largeArcFlag,
+        0,
+        end.x,
+        end.y,
+        "Z",
+      ].join(" ");
+      return d;
+    }
+
+    async function showModuleResults() {
+      quizContainer.style.display = "none";
+      resultsContainer.style.display = "block";
+      resultsList.innerHTML = "";
+
+      const totalQuestions = currentModuleData.length;
+      const percentage =
+        totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+      const listItem = document.createElement("li");
+      listItem.textContent = `Resultados del módulo ${currentModuleKey}: Obtuviste ${correctAnswers} de ${totalQuestions} (${percentage.toFixed(
+        2
+      )}%) respuestas correctas.`;
+      resultsList.appendChild(listItem);
+    }
+
+    function restartQuiz() {
+      resultsContainer.style.display = "none";
+      moduleSelectionDiv.style.display = "block";
+      currentModuleKey = null;
+      currentModuleData = null;
+    }
+
+    nextButton.addEventListener("click", loadQuestion);
+    restartButton.addEventListener("click", restartQuiz);
+
+    currentUser = await getCurrentUser();
     populateModuleSelection();
-  }
-
-  function restartQuiz() {
-    resultsContainer.style.display = "none";
-    moduleSelectionDiv.style.display = "block";
-    currentModuleKey = null;
-    currentModuleData = null;
-  }
-
-  async function updateProgressDisplay() {
-    progressList.innerHTML = ""; // Neteja la llista
-
-    if (!currentUser) {
-      progressList.innerHTML =
-        "<li>Inicia sessió per veure el teu progrés.</li>";
-      return;
-    }
-
-    const { data: userProgress, error } = await _supabase
-      .from("progres_usuari")
-      .select(
-        "vegades_correctes, vegades_incorrectes, estat, vocabulari(english, spanish)"
-      )
-      .eq("id_usuari", currentUser.id)
-      .order("data_ultima_practica", { ascending: false });
-
-    if (error) {
-      console.error("Error al obtener el progreso del usuario:", error);
-      progressList.innerHTML = "<li>Error en carregar el progrés.</li>";
-      return;
-    }
-
-    if (userProgress.length === 0) {
-      progressList.innerHTML = "<li>Encara no has practicat cap paraula.</li>";
-      return;
-    }
-
-    const learnedWords = userProgress.filter((item) => item.estat === "apresa");
-    if (learnedWords.length > 0) {
-      progressList.innerHTML += "<h3>Paraules apreses:</h3>";
-      learnedWords.forEach((item) => {
-        progressList.innerHTML += `
-                      <li>
-                          <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
-                          <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
-                      </li>
-                  `;
-      });
-    }
-
-    const needsPracticeWords = userProgress.filter(
-      (item) => item.estat !== "apresa"
+    updateProgressDisplay();
+  } catch (error) {
+    console.error("❌ Se ha producido un error crítico en initQuiz:", error);
+    manejarAlerta(
+      "Se ha producido un error inesperado. Por favor, revisa la consola para más detalles.",
+      "error"
     );
-    if (needsPracticeWords.length > 0) {
-      progressList.innerHTML += "<h3>Paraules que necessiten pràctica:</h3>";
-      needsPracticeWords.forEach((item) => {
-        progressList.innerHTML += `
-                      <li>
-                          <strong>${item.vocabulari.english}</strong> (${item.vocabulari.spanish})
-                          <br> Correctes: ${item.vegades_correctes} | Incorrectes: ${item.vegades_incorrectes}
-                      </li>
-                  `;
-      });
-    }
   }
-  // Afegim els listeners d'esdeveniments
-  nextButton.addEventListener("click", loadQuestion);
-  restartButton.addEventListener("click", restartQuiz);
-
-  // Càrrega inicial del qüestionari
-  currentUser = await getCurrentUser();
-  populateModuleSelection();
-  updateProgressDisplay();
 }
