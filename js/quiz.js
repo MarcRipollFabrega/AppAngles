@@ -690,112 +690,74 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       const enProgresoPath = document.getElementById("en-progreso-path");
       const aprendidasPath = document.getElementById("aprendidas-path");
       const levelText = document.getElementById("level-text");
-
+      
       const textContainer = document.getElementById("progress-text");
-      if (textContainer) {
+      if(textContainer){
         textContainer.innerHTML = `
           <p>Nivel: ${level}</p>
           <p>Aprendidas: ${aprendidas} (${aprendidasPerc.toFixed(1)}%)</p>
           <p>Incorrectas: ${incorrectas} (${incorrectasPerc.toFixed(1)}%)</p>
           <p>En Progreso: ${enProgreso} (${enProgresoPerc.toFixed(1)}%)</p>
-          <p>No Practicadas: ${noPracticadas} (${noPracticadasPerc.toFixed(
-          1
-        )}%)</p>
+          <p>No Practicadas: ${noPracticadas} (${noPracticadasPerc.toFixed(1)}%)</p>
         `;
       }
 
       if (!svg || !levelText) {
-        console.error(
-          "No se encontraron los elementos SVG. Asegúrate de que tu HTML tenga los IDs correctos."
-        );
+        console.error("No se encontraron los elementos SVG. Asegúrate de que tu HTML tenga los IDs correctos.");
         return;
       }
-
+      
       levelText.textContent = level;
-
+      
       // 3. Modificar los atributos de los elementos para reflejar los datos
       let cumulativePercent = 0;
-
+      
       if (noPracticadasPath) {
-        const d = describeArc(
-          50,
-          50,
-          40,
-          cumulativePercent * 3.6,
-          (cumulativePercent + noPracticadasPerc) * 3.6
-        );
+        const d = describeArc(50, 50, 40, cumulativePercent * 3.6, (cumulativePercent + noPracticadasPerc) * 3.6);
         noPracticadasPath.setAttribute("d", d);
         cumulativePercent += noPracticadasPerc;
       }
-
+      
       if (incorrectasPath) {
-        const d = describeArc(
-          50,
-          50,
-          40,
-          cumulativePercent * 3.6,
-          (cumulativePercent + incorrectasPerc) * 3.6
-        );
+        const d = describeArc(50, 50, 40, cumulativePercent * 3.6, (cumulativePercent + incorrectasPerc) * 3.6);
         incorrectasPath.setAttribute("d", d);
         cumulativePercent += incorrectasPerc;
       }
-
+      
       if (enProgresoPath) {
-        const d = describeArc(
-          50,
-          50,
-          40,
-          cumulativePercent * 3.6,
-          (cumulativePercent + enProgresoPerc) * 3.6
-        );
+        const d = describeArc(50, 50, 40, cumulativePercent * 3.6, (cumulativePercent + enProgresoPerc) * 3.6);
         enProgresoPath.setAttribute("d", d);
         cumulativePercent += enProgresoPerc;
       }
-
+      
       if (aprendidasPath) {
-        const d = describeArc(
-          50,
-          50,
-          40,
-          cumulativePercent * 3.6,
-          (cumulativePercent + aprendidasPerc) * 3.6
-        );
+        const d = describeArc(50, 50, 40, cumulativePercent * 3.6, (cumulativePercent + aprendidasPerc) * 3.6);
         aprendidasPath.setAttribute("d", d);
       }
     }
-
+    
     function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
-      const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+      const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
       return {
-        x: centerX + radius * Math.cos(angleInRadians),
-        y: centerY + radius * Math.sin(angleInRadians),
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians))
       };
     }
-
+    
     function describeArc(x, y, radius, startAngle, endAngle) {
       if (startAngle === endAngle) return `M ${x} ${y} Z`;
       const start = polarToCartesian(x, y, radius, endAngle);
       const end = polarToCartesian(x, y, radius, startAngle);
       const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
       const d = [
-        "M",
-        x,
-        y,
-        "L",
-        start.x,
-        start.y,
-        "A",
-        radius,
-        radius,
-        0,
-        largeArcFlag,
-        0,
-        end.x,
-        end.y,
-        "Z",
+        "M", x, y,
+        "L", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+        "Z"
       ].join(" ");
       return d;
     }
+
 
     async function showModuleResults() {
       quizContainer.style.display = "none";
