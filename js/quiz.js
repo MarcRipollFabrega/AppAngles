@@ -357,7 +357,9 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
         const titleElement = document.createElement("h3");
         titleElement.textContent = title;
         lessonsListContainer.appendChild(titleElement);
-        lessonsListContainer.innerHTML += content;
+
+        // NUEVO: Renderiza el contenido de Markdown a HTML
+        lessonsListContainer.innerHTML += marked.parse(content);
       } else {
         lessonsListContainer.innerHTML = `<p>No se ha encontrado contenido para esta lección.</p>`;
       }
@@ -499,17 +501,6 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       lessonsContainer.style.display = "block";
       quizContainer.style.display = "block";
 
-      const explicacion = await obtenerExplicacion(level, "General");
-      // Condicional para cargar la lección si existe.
-      if (explicacion) {
-        cargarLeccion(explicacion.titulo_leccion, explicacion.contenido_html);
-      } else {
-        cargarLeccion(
-          "Sin Explicación",
-          "<p>No hay una lección disponible para este módulo.</p>"
-        );
-      }
-
       // Reinicia los contadores para el nuevo cuestionario.
       currentQuestionIndex = 0;
       correctAnswers = 0;
@@ -518,12 +509,27 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     }
 
     // Función para cargar la siguiente pregunta del cuestionario.
-    function loadQuestion() {
+    async function loadQuestion() {
       // Condicional para verificar si hay más preguntas.
       if (currentQuestionIndex < currentModuleData.length) {
         currentQuestion = currentModuleData[currentQuestionIndex];
         optionsContainer.innerHTML = "";
         feedbackElement.textContent = "";
+
+        // NUEVO: Llama a la función 'obtenerExplicacion' con el tema de la pregunta actual
+        const explicacion = await obtenerExplicacion(
+          currentQuestion.nivel_base,
+          currentQuestion.tema
+        );
+
+        if (explicacion) {
+          cargarLeccion(explicacion.titulo_leccion, explicacion.contenido_html);
+        } else {
+          cargarLeccion(
+            "Sin Explicación",
+            "<p>No hay una lección disponible para este tema.</p>"
+          );
+        }
 
         let questionText,
           exampleText,
@@ -546,7 +552,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
           questionText = `¿Cuál es la traducción de "${currentQuestion.spanish}"?`;
           exampleText = currentQuestion.example_spanish;
           wordToPlay = currentQuestion.spanish;
-          exampleToPlay = currentQuestion.question_spanish;
+          exampleToPlay = currentQuestion.example_spanish;
           languageCode = "es-ES";
           correctAnswer = currentQuestion.english;
           allOptions = currentModuleData.map((item) => item.english);
@@ -903,11 +909,8 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     populateModuleSelection();
     updateProgressDisplay();
   } catch (error) {
-    // Captura y maneja cualquier error crítico.
-    console.error("❌ Se ha producido un error crítico en initQuiz:", error);
-    manejarAlerta(
-      "Se ha producido un error inesperado. Por favor, revisa la consola para más detalles.",
-      "error"
-    );
+    // Captura y maneja cualquier error inesperado durante la inicialización.
+    console.error("Error al inicializar el cuestionario:", error);
+    manejarAlerta("Hubo un error al cargar el cuestionario.", "error");
   }
 }
