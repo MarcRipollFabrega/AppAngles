@@ -34,14 +34,13 @@
           <span class="app-name">LINGUAQUIZ</span>
         </div>
         <div class="menu-right">
-          <button id="perfil-button" class="menu-button">
+          <button id="results-button" class="menu-button oculto">
+            Resultados <i class="fa-solid fa-bars"></i>
+          </button>
+          <button id="perfil-button" class="menu-button oculto">
             Perfil <i class="fa-solid fa-user-circle"></i>
           </button>
-          <button
-            id="logout-button"
-            class="logout-button"
-            style="display: none"
-          >
+          <button id="logout-button" class="logout-button oculto" >
             Cerrar Sesión <i class="fa-solid fa-right-from-bracket"></i>
           </button>
         </div>
@@ -73,7 +72,6 @@
           <div id="results-container">
             <h2>Resultados</h2>
             <ul id="results-list"></ul>
-            <button id="restart-button">Reiniciar Cuestionario</button>
           </div>
         </section>
       </main>

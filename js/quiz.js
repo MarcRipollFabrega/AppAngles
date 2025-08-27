@@ -60,10 +60,11 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     const feedbackElement = document.getElementById("feedback");
     const resultsContainer = document.getElementById("results-container");
     const resultsList = document.getElementById("results-list");
-    const restartButton = document.getElementById("restart-button");
+    const exitQuizButton = document.getElementById("exit-quiz-button");
     const progressContainer = document.getElementById("progress-container");
     const progressList = document.getElementById("progress-list");
-    const sidebar = document.querySelector(".sidebar");
+   
+ 
 
     // Oculta el contenedor de lecciones al inicio.
     lessonsContainer.style.display = "none";
@@ -80,10 +81,10 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       !feedbackElement ||
       !resultsContainer ||
       !resultsList ||
-      !restartButton ||
+      !exitQuizButton ||
       !progressContainer ||
-      !progressList ||
-      !sidebar
+      !progressList 
+   
     ) {
       // Muestra un error si falta algún elemento.
       console.error(
@@ -92,8 +93,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       return;
     }
 
-    // Muestra la barra lateral.
-    sidebar.style.display = "block";
+
 
     // Variables de estado del cuestionario.
     let currentModuleKey = null; // Almacena el nivel o módulo actual.
@@ -334,7 +334,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       lessonsContainer.style.display = "none";
       resultsContainer.style.display = "none";
       moduleSelectionDiv.style.display = "block";
-      sidebar.style.display = "block";
+  
 
       // Crea y añade un botón para cada nivel disponible.
       availableLevels.forEach((levelName) => {
@@ -483,7 +483,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     async function loadModule(level) {
       currentModuleKey = level;
 
-      sidebar.style.display = "block";
+     
 
       currentModuleData = await prepareModuleData(level);
 
@@ -894,6 +894,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
     // Función para reiniciar el cuestionario y volver a la selección de módulos.
     function restartQuiz() {
       resultsContainer.style.display = "none";
+      lessonsContainer.style.display = "none";
       moduleSelectionDiv.style.display = "block";
       // Restablece las variables de estado.
       currentModuleKey = null;
@@ -902,7 +903,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
 
     // Asigna los event listeners a los botones.
     nextButton.addEventListener("click", loadQuestion);
-    restartButton.addEventListener("click", restartQuiz);
+    exitQuizButton.addEventListener("click", restartQuiz);
 
     // Inicializa la aplicación.
     currentUser = await getCurrentUser();
