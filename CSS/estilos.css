@@ -486,4 +486,19 @@ input {
     #results-button {
         display: flex;
     }
+
+    .top-menu {
+    flex-direction: column; /* Apila los elementos verticalmente */
+    align-items: flex-start; /* Alinea los elementos a la izquierda */
+  }
+
+  .menu-left {
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  }
+
+  .menu-right {
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    justify-content: space-around; /* Distribuye los botones equitativamente en la fila */
+    margin-top: 1rem; /* Añade un espacio entre las dos filas */
+  }
 }
