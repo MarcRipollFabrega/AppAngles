@@ -35,7 +35,7 @@ const loginPasswordInput = document.getElementById("login-password");
 const toggleLinks = document.querySelectorAll(".toggle-link");
 const logoutButton = document.getElementById("logout-button");
 const perfilButton = document.getElementById("perfil-button");
- const resultsButton = document.getElementById("results-button");
+const resultsButton = document.getElementById("results-button");
 const alertDiv = document.getElementById("alerta");
 const nombreUsuarioInput = document.getElementById("nombre-usuario");
 // Aquest ID fa referència al contenidor de les preguntes (quiz) en si mateix
@@ -97,46 +97,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     userSession = session;
     console.log("Estat d'autenticació canviat:", event, "Sessió:", session);
 
-if (session) {
-  // === USUARIO AUTENTICADO ===
-  authFormsContainer.style.display = "none";
-  splitScreenContainer.style.display = "flex";
-  perfilContainer.style.display = "none";
+    if (session) {
+      // === USUARIO AUTENTICADO ===
+      authFormsContainer.style.display = "none";
+      splitScreenContainer.style.display = "flex";
+      perfilContainer.style.display = "none";
 
-  // Mostrar los botones del menú superior
-  resultsButton.classList.remove("oculto");
-  resultsButton.classList.add("visible");
-  logoutButton.classList.remove("oculto");
-  logoutButton.classList.add("visible");
-  perfilButton.classList.remove("oculto");
-  perfilButton.classList.add("visible");
+      // Mostrar los botones del menú superior
+      resultsButton.classList.remove("oculto");
+      resultsButton.classList.add("visible");
+      logoutButton.classList.remove("oculto");
+      logoutButton.classList.add("visible");
+      perfilButton.classList.remove("oculto");
+      perfilButton.classList.add("visible");
 
-  // Mostrar la selección de módulos por defecto
-  if (moduleSelection) {
-    moduleSelection.style.display = "block";
-  }
-  // Ocultar el contenedor de preguntas
-  if (quizContainer) {
-    quizContainer.style.display = "none";
-  }
+      // Mostrar la selección de módulos por defecto
+      if (moduleSelection) {
+        moduleSelection.style.display = "block";
+      }
+      // Ocultar el contenedor de preguntas
+      if (quizContainer) {
+        quizContainer.style.display = "none";
+      }
 
-  cargarDatosPerfil();
-  // Inicializar el cuestionario con el cliente de Supabase y la función de alerta
-  initQuiz(supabaseClient, manejarAlerta);
-} else {
-  // === USUARIO NO AUTENTICADO ===
-  authFormsContainer.style.display = "flex";
-  splitScreenContainer.style.display = "none";
-  perfilContainer.style.display = "none";
+      cargarDatosPerfil();
+      // Inicializar el cuestionario con el cliente de Supabase y la función de alerta
+      initQuiz(supabaseClient, manejarAlerta);
+    } else {
+      // === USUARIO NO AUTENTICADO ===
+      authFormsContainer.style.display = "flex";
+      splitScreenContainer.style.display = "none";
+      perfilContainer.style.display = "none";
 
-  // Ocultar los botones del menú superior
-  resultsButton.classList.remove("visible");
-  resultsButton.classList.add("oculto");
-  logoutButton.classList.remove("visible");
-  logoutButton.classList.add("oculto");
-  perfilButton.classList.remove("visible");
-  perfilButton.classList.add("oculto");
-}
+      // Ocultar los botones del menú superior
+      resultsButton.classList.remove("visible");
+      resultsButton.classList.add("oculto");
+      logoutButton.classList.remove("visible");
+      logoutButton.classList.add("oculto");
+      perfilButton.classList.remove("visible");
+      perfilButton.classList.add("oculto");
+    }
   });
 
   // Escoltador d'esdeveniments per canviar entre formularis
