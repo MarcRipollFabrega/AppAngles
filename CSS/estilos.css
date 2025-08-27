@@ -372,12 +372,14 @@ input {
 #quiz-container,
 #results-container {
   width: 100%;
+  max-width: 600px;
   padding: 2rem;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   margin: 0 auto;
+  padding: 1rem;
 }
 
 #quiz-container {
@@ -440,6 +442,9 @@ input {
   transition: background-color 0.3s ease;
   margin-top: 1.5rem;
   color: white;
+  width:100%;
+  white-space: normal;
+  box-sizing: border-box;
 }
 
 #next-button,
@@ -501,4 +506,9 @@ input {
     justify-content: space-around; /* Distribuye los botones equitativamente en la fila */
     margin-top: 1rem; /* Añade un espacio entre las dos filas */
   }
+      .exit-quiz-button {
+        /* Puedes ajustar más específicamente aquí */
+        padding: 0.8rem; /* Un poco menos de padding para dejar más espacio al texto */
+        font-size: 0.85rem; /* Fuente un poco más pequeña si es necesario */
+    }
 }
