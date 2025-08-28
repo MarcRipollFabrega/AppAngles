@@ -1,3 +1,5 @@
+// app.js
+
 /***************************************************************************/
 /* 1. CONEXIÓ SUPABASE & INICIALITZACIÓ */
 /***************************************************************************/
@@ -11,123 +13,151 @@ let userSession = null;
 /***************************************************************************/
 /* IMPORTEM L'ARXIU QUIZ. */
 /***************************************************************************/
-// Importem la funció 'initQuiz' del fitxer 'quiz.js'.
-// Assegura't que el fitxer 'quiz.js' estigui a la mateixa carpeta.
 import { initQuiz } from "./quiz.js";
 
 /***************************************************************************/
-/* 2. VARIABLES DELS ELEMENTS HTML (CORREGIT) */
+/* 2. FUNCIONES DE UTILIDAD (CONTROL DE VISIBILIDAD) */
 /***************************************************************************/
-const authFormsContainer = document.querySelector("#auth-forms-container");
-const contenedorPantallaDividida = document.querySelector(".contenedor-pantalla-dividida");
-const registroForm = document.getElementById("registro-form");
-const loginForm = document.getElementById("login-form");
-const perfilContainer = document.getElementById("perfil-container");
-const closePerfilButton = document.getElementById("close-perfil-button");
-const perfilForm = document.getElementById("perfil-form");
-const nombreCompletoInput = document.getElementById("nombre-completo");
-const perfilPhotoUploadInput = document.getElementById("perfil-photo-upload");
-const perfilPhotoPreview = document.getElementById("perfil-photo-preview");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const loginEmailInput = document.getElementById("login-email");
-const loginPasswordInput = document.getElementById("login-password");
-const toggleLinks = document.querySelectorAll(".toggle-link");
-const logoutButton = document.getElementById("logout-button");
-const perfilButton = document.getElementById("perfil-button");
-const resultsButton = document.getElementById("results-button");
-const alertDiv = document.getElementById("alerta");
-const nombreUsuarioInput = document.getElementById("nombre-usuario");
-// Aquest ID fa referència al contenidor de les preguntes (quiz) en si mateix
-const quizContainer = document.getElementById("quiz-container");
-const moduleSelection = document.getElementById("module-selection");
-const exitQuizButton = document.getElementById("exit-quiz-button");
+// Esta función debe ser exportable y no depender de variables globales
+export function controlarVisibilidad() {
+  const anchoPantalla = window.innerWidth;
+  const infoDerecha = document.querySelector(".sidebar");
+  const resultsButton = document.getElementById("results-button");
+  const closeButtonSidebar = document.querySelector(".close-button");
+  const closeButtonLessons = document.querySelector(".close-button-lessons");
+  const lessonsButton = document.getElementById("lessons-button");
+  const lessonsContainer = document.getElementById("lessons-container");
 
-const infoDerecha = document.querySelector(".sidebar"); //Panel de resultados
-const closeButtonSidebar = document.querySelector(".close-button");
+  if (infoDerecha && resultsButton && closeButtonSidebar) {
+    if (anchoPantalla < 750) {
+      infoDerecha.style.display = "none";
+      resultsButton.style.display = "block";
+      lessonsButton.style.display = "block";
+      lessonsContainer.style.display="none";
+      // Asegúrate de que estos estilos son correctos para tu diseño en móvil
+      closeButtonSidebar.style.top = "130px";
+      closeButtonSidebar.style.right = "20px";
 
-/***************************************************************************/
-/* 3. FUNCIONS D'UTILITAT I DADES */
-/***************************************************************************/
-
-/** Mostra una alerta dinàmica. */
-function manejarAlerta(mensaje, tipo) {
-  alertDiv.className = `alerta mostrar ${tipo}`;
-  alertDiv.innerHTML = `<p>${mensaje}</p>`;
-  setTimeout(() => {
-    alertDiv.className = "alerta";
-  }, 3000);
-}
-
-/** Carrega les dades del perfil de l'usuari al formulari. */
-async function cargarDatosPerfil() {
-  if (!userSession) return;
-
-  const { data: perfil, error } = await supabaseClient
-    .from("perfiles")
-    .select("nombre_completo, foto_url, nombre_usuario")
-    .eq("id", userSession.user.id)
-    .single();
-
-  if (perfil) {
-    nombreCompletoInput.value = perfil.nombre_completo || "";
-    nombreUsuarioInput.value = perfil.nombre_usuario || "";
-    if (perfil.foto_url) {
-      perfilPhotoPreview.src = perfil.foto_url;
+      closeButtonLessons.style.top = "130px";
     } else {
-      perfilPhotoPreview.src =
-        "https://udvyzslgbaxpicfjklvn.supabase.co/storage/v1/object/public/perfiles/silueta.jpg";
+      infoDerecha.style.display = "block";
+      resultsButton.style.display = "none";
+      lessonsButton.style.display = "none";
+      lessonsContainer.style.display = "block";
+      // Restablece los estilos en pantallas grandes
+      closeButtonSidebar.style.top = "";
+      closeButtonSidebar.style.right = "";
     }
-  } else {
-    nombreCompletoInput.value = "";
-    nombreUsuarioInput.value = "";
-    perfilPhotoPreview.src = "img/silueta.jpg";
-  }
-  if (error && error.code !== "PGRST116") {
-    console.error("Error al cargar perfil:", error);
   }
 }
+// Llama a la función al cargar la página y al redimensionar la ventana
+window.addEventListener("load", controlarVisibilidad);
+window.addEventListener("resize", controlarVisibilidad);
 
 /***************************************************************************/
-/* 4. LÒGICA DE LA INTERFÍCIE D'USUARI (CORREGIT) */
+/* 3. LÓGICA DE LA INTERFAZ Y MANEJO DE EVENTOS */
 /***************************************************************************/
 document.addEventListener("DOMContentLoaded", async () => {
-  // Lògica de verificació de sessió i inicialització de la interfície.
+  // 3.1. DECLARACIÓN DE VARIABLES DE ELEMENTOS HTML
+  // (Ahora se declaran dentro de DOMContentLoaded para garantizar que existen)
+  const authFormsContainer = document.querySelector("#auth-forms-container");
+  const contenedorPantallaDividida = document.querySelector(
+    ".contenedor-pantalla-dividida"
+  );
+  const registroForm = document.getElementById("registro-form");
+  const loginForm = document.getElementById("login-form");
+  const perfilContainer = document.getElementById("perfil-container");
+  const closePerfilButton = document.getElementById("close-perfil-button");
+  const perfilForm = document.getElementById("perfil-form");
+  const nombreCompletoInput = document.getElementById("nombre-completo");
+  const perfilPhotoUploadInput = document.getElementById("perfil-photo-upload");
+  const perfilPhotoPreview = document.getElementById("perfil-photo-preview");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const loginEmailInput = document.getElementById("login-email");
+  const loginPasswordInput = document.getElementById("login-password");
+  const toggleLinks = document.querySelectorAll(".toggle-link");
+  const logoutButton = document.getElementById("logout-button");
+  const perfilButton = document.getElementById("perfil-button");
+  const resultsButton = document.getElementById("results-button"); // Se usa aquí
+  const alertDiv = document.getElementById("alerta");
+  const nombreUsuarioInput = document.getElementById("nombre-usuario");
+  const quizContainer = document.getElementById("quiz-container");
+  const moduleSelection = document.getElementById("module-selection");
+  const exitQuizButton = document.getElementById("exit-quiz-button");
+  const infoDerecha = document.querySelector(".sidebar"); // Se usa aquí
+  const closeButtonSidebar = document.querySelector(".close-button"); // Se usa aquí
+
+    const closeButtonLessons = document.querySelector(".close-button-lessons");
+    const lessonsButton = document.getElementById("lessons-button");
+    const lessonsContainer = document.getElementById("lessons-container");
+
+  // 3.2. FUNCIONES DE UTILIDAD (Si dependen de los elementos, van aquí)
+  function manejarAlerta(mensaje, tipo) {
+    alertDiv.className = `alerta mostrar ${tipo}`;
+    alertDiv.innerHTML = `<p>${mensaje}</p>`;
+    setTimeout(() => {
+      alertDiv.className = "alerta";
+    }, 3000);
+  }
+
+  async function cargarDatosPerfil() {
+    if (!userSession) return;
+    const { data: perfil, error } = await supabaseClient
+      .from("perfiles")
+      .select("nombre_completo, foto_url, nombre_usuario")
+      .eq("id", userSession.user.id)
+      .single();
+
+    if (perfil) {
+      nombreCompletoInput.value = perfil.nombre_completo || "";
+      nombreUsuarioInput.value = perfil.nombre_usuario || "";
+      if (perfil.foto_url) {
+        perfilPhotoPreview.src = perfil.foto_url;
+      } else {
+        perfilPhotoPreview.src =
+          "https://udvyzslgbaxpicfjklvn.supabase.co/storage/v1/object/public/perfiles/silueta.jpg";
+      }
+    } else {
+      nombreCompletoInput.value = "";
+      nombreUsuarioInput.value = "";
+      perfilPhotoPreview.src = "img/silueta.jpg";
+    }
+    if (error && error.code !== "PGRST116") {
+      console.error("Error al cargar perfil:", error);
+    }
+  }
+
+  // 3.3. LÓGICA DE LA INTERFAZ
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     userSession = session;
-    console.log("Estat d'autenticació canviat:", event, "Sessió:", session);
+    
 
     if (session) {
-      // === USUARIO AUTENTICADO ===
       authFormsContainer.style.display = "none";
       contenedorPantallaDividida.style.display = "flex";
       perfilContainer.style.display = "none";
 
-      // Mostrar la selección de módulos por defecto
       if (moduleSelection) {
         moduleSelection.style.display = "block";
       }
-      // Ocultar el contenedor de preguntas
       if (quizContainer) {
         quizContainer.style.display = "none";
       }
 
       cargarDatosPerfil();
-      // Inicializar el cuestionario con el cliente de Supabase y la función de alerta
       initQuiz(supabaseClient, manejarAlerta);
     } else {
-      // === USUARIO NO AUTENTICADO ===
       authFormsContainer.style.display = "flex";
       contenedorPantallaDividida.style.display = "none";
       perfilContainer.style.display = "none";
     }
   });
 
-  // Escoltador d'esdeveniments per canviar entre formularis
+  // 3.4. EVENT LISTENERS
   toggleLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      // Lògica de canvi de formulari corregida
       if (registroForm.style.display === "none") {
         registroForm.style.display = "block";
         loginForm.style.display = "none";
@@ -138,7 +168,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Escoltador d'esdeveniments per a la previsualització de la imatge
   perfilPhotoUploadInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -150,12 +179,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Escoltadors d'esdeveniments dels formularis i botons
   registroForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = emailInput.value;
     const password = passwordInput.value;
-
     if (email === "" || password === "") {
       manejarAlerta(
         "El email i la contrasenya no poden estar en blanc.",
@@ -163,12 +190,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       return;
     }
-
     const { error: signUpError } = await supabaseClient.auth.signUp({
       email,
       password,
     });
-
     if (signUpError) {
       manejarAlerta("Error en el registre: " + signUpError.message, "error");
     } else {
@@ -184,7 +209,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.preventDefault();
     const email = loginEmailInput.value;
     const password = loginPasswordInput.value;
-
     if (email === "" || password === "") {
       manejarAlerta(
         "El email o la contrasenya no poden estar en blanc.",
@@ -192,18 +216,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       return;
     }
-
     const { error: signInError } = await supabaseClient.auth.signInWithPassword(
-      {
-        email,
-        password,
-      }
+      { email, password }
     );
-
     if (signInError) {
       manejarAlerta("Error en iniciar sessió: " + signInError.message, "error");
     } else {
-      // Afegim una alerta d'èxit per a un feedback immediat
       manejarAlerta("¡Inici de sessió exitós!", "exito");
     }
   });
@@ -214,7 +232,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       manejarAlerta("Error en tancar sessió: " + error.message, "error");
     } else {
       manejarAlerta("Sessió tancada correctament.", "exito");
-      // La funció onAuthStateChange ja gestionarà l'estat, no cal recarregar.
     }
   });
 
@@ -244,7 +261,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const fileExt = "jpg";
         const fileName = `avatar.${fileExt}`;
         const filePath = `avatares/${userSession.user.id}/${fileName}`;
-
         const { error: uploadError } = await supabaseClient.storage
           .from("perfiles")
           .upload(filePath, fotoFile, { cacheControl: "60", upsert: true });
@@ -256,7 +272,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           );
           return;
         }
-
         const { data: publicUrlData } = supabaseClient.storage
           .from("perfiles")
           .getPublicUrl(filePath);
@@ -267,13 +282,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         .from("perfiles")
         .select("id")
         .eq("id", userSession.user.id);
-
       const updates = {
         nombre_completo: nombre,
         nombre_usuario: nombreUsuario,
         actualizado_en: new Date().toISOString(),
       };
-
       if (fotoUrl) {
         updates.foto_url = fotoUrl;
       }
@@ -302,53 +315,42 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // === AÑADIMOS LA FUNCIONALIDAD DEL BOTÓN "SALIR DEL CUESTIONARIO" ===
   if (exitQuizButton) {
     exitQuizButton.addEventListener("click", () => {
-      // Oculta el contenedor del cuestionario de preguntas
       quizContainer.style.display = "none";
-      // Muestra el contenedor de selección de módulos
       moduleSelection.style.display = "block";
     });
   }
-  // Función para controlar la visibilidad según el ancho de la pantalla
-  function controlarVisibilidad() {
-    const anchoPantalla = window.innerWidth; // Ancho pantalla
-    
-    
-    if (anchoPantalla < 750) {
-      // Ejemplo para pantallas pequeñas
-      infoDerecha.style.display = "none";
-      resultsButton.style.display = "block";
-      closeButtonSidebar.style.top = "130px";
-      closeButtonSidebar.style.right = "20px";
-  
-    } else {
-      // Ejemplo para pantallas grandes
-      infoDerecha.style.display = "block";
-      resultsButton.style.display = "none";
-    }
+
+  // AÑADIMOS LOS EVENT LISTENERS DE LOS BOTONES AQUI DENTRO DEL DOMContentLoaded
+  if (resultsButton) {
+    resultsButton.addEventListener("click", () => {
+      if (infoDerecha.style.display === "block") {
+        infoDerecha.style.display = "none";
+      } else {
+        infoDerecha.style.display = "block";
+      }
+    });
   }
-  // Llama a la función al cargar la página
-  window.addEventListener("load", controlarVisibilidad);
 
-  // Llama a la función cada vez que la ventana cambie de tamaño
-  window.addEventListener("resize", controlarVisibilidad);
-
-  /************************************************************/
-  /* Evento para escuchar el boton de resultados*/
-  /***********************************************************/
-  resultsButton.addEventListener("click", () => {
-    if (infoDerecha.style.display === "block") {
-      // Si está visible, lo oculta
+  if (closeButtonSidebar) {
+    closeButtonSidebar.addEventListener("click", () => {
       infoDerecha.style.display = "none";
-    } else {
-      // Si está oculto, lo muestra
-      infoDerecha.style.display = "block";
+    });
+  }
+    if (lessonsButton) {
+      lessonsButton.addEventListener("click", () => {
+        if (lessonsContainer.style.display === "block") {
+          lessonsContainer.style.display = "none";
+        } else {
+          lessonsContainer.style.display = "block";
+        }
+      });
     }
-  });
-  closeButtonSidebar.addEventListener("click", () => {
-    // 3. Oculta el aside (la X solo debe cerrar, no abrir)
-    infoDerecha.style.display = "none";
-  });
+
+    if (closeButtonLessons) {
+      closeButtonLessons.addEventListener("click", () => {
+        lessonsContainer.style.display = "none";
+      });
+    }
 });

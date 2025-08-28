@@ -37,22 +37,28 @@
         </div>
         <!--? BOTONES DEL MENÚ -->
         <div class="menu-right">
+          <button id="lessons-button" class="menu-button">
+            Información <i class="fa-solid fa-info-circle"></i>
+          </button>
           <button id="results-button" class="menu-button">
             Resultados <i class="fa-solid fa-bars"></i>
           </button>
           <button id="perfil-button" class="menu-button">
             Perfil <i class="fa-solid fa-user-circle"></i>
           </button>
-          <button id="logout-button" class="logout-button" >
+          <button id="logout-button" class="logout-button">
             Cerrar Sesión <i class="fa-solid fa-right-from-bracket"></i>
           </button>
         </div>
       </nav>
     </header>
-<!--? DIVIDE LA PANTALLA EN TRES PARTES -->
+    <!--? DIVIDE LA PANTALLA EN TRES PARTES -->
     <div class="contenedor-pantalla-dividida">
       <!--? INFORMACIÓN DE LAS LECCIONES -->
       <section class="main-container lessons-container" id="lessons-container">
+        <button class="close-button-lessons" aria-label="Cerrar menú">
+          &times;
+        </button>
         <div id="lessons-list"></div>
       </section>
       <!--? CUESTIONARIO DONDE EL USUARIO VA RESPONDIENDO A LAS PREGUNTAS-->
@@ -84,14 +90,27 @@
           <h2 id="progress-chart-title">Progreso del Nivel</h2>
           <!--? GRAFICO SVG -->
           <div class="progress-chart">
-            <svg id="progress-chart-svg" width="200" height="200"viewBox="0 0 100 100" >
+            <svg
+              id="progress-chart-svg"
+              width="200"
+              height="200"
+              viewBox="0 0 100 100"
+            >
               <circle cx="50" cy="50" r="45" fill="#f0f0f0" />
               <path id="no-practicadas-path" fill="#CCCCCC"></path>
               <path id="incorrectas-path" fill="#D9534F"></path>
               <path id="en-progreso-path" fill="#F0AD4E"></path>
               <path id="aprendidas-path" fill="#5CB85C"></path>
               <circle cx="50" cy="50" r="30" fill="white"></circle>
-              <text id="level-text" x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold"></text>
+              <text
+                id="level-text"
+                x="50"
+                y="50"
+                text-anchor="middle"
+                dominant-baseline="central"
+                font-size="10"
+                font-weight="bold"
+              ></text>
             </svg>
             <div id="progress-text"></div>
           </div>
@@ -99,7 +118,7 @@
         </div>
       </aside>
     </div>
-<!--? FORMULARIO DE REGISTRO -->
+    <!--? FORMULARIO DE REGISTRO -->
     <section id="auth-forms-container">
       <form id="registro-form" class="main-container" style="display: none">
         <div class="form-image-container">
@@ -145,7 +164,7 @@ registro"
           <a class="toggle-link" href="#">Iniciar Sessión</a>
         </p>
       </form>
-<!--? FORMULARIO DE INICIO -->
+      <!--? FORMULARIO DE INICIO -->
       <form id="login-form" class="main-container">
         <div class="form-image-container">
           <img
@@ -188,7 +207,7 @@ de inicio de sesión"
         </p>
       </form>
     </section>
-<!--? FORMULARIO DEL PERFIL -->
+    <!--? FORMULARIO DEL PERFIL -->
     <section id="perfil-info-container">
       <div id="perfil-container" class="main-container" style="display: none">
         <form id="perfil-form" class="main-container">
@@ -240,7 +259,7 @@ de inicio de sesión"
         </form>
       </div>
     </section>
-<!--? ALERTAS -->
+    <!--? ALERTAS -->
     <div id="alerta">
       <p>alerta</p>
     </div>

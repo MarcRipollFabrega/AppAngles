@@ -1,5 +1,8 @@
 // Este archivo contiene toda la lógica del cuestionario, separada del archivo principal.
 
+// Importa la función de app.js. Asegúrate de que la ruta sea correcta.
+import { controlarVisibilidad } from './app.js'; 
+
 /**
  * Función para reproducir una palabra o frase utilizando Text-to-Speech (Texto a Voz).
  * @param {string} word - La palabra o frase a reproducir.
@@ -487,7 +490,7 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
 
       currentModuleData = await prepareModuleData(level);
 
-      console.log("Datos del módulo cargados:", currentModuleData);
+      
 
       // Condicional para manejar el caso de que no haya palabras para practicar.
       if (currentModuleData.length === 0) {
@@ -500,6 +503,8 @@ export async function initQuiz(supabaseClient, manejarAlerta) {
       moduleSelectionDiv.style.display = "none";
       lessonsContainer.style.display = "block";
       quizContainer.style.display = "block";
+      //Carga la función para controlar visualización de los elementos
+      controlarVisibilidad();
 
       // Reinicia los contadores para el nuevo cuestionario.
       currentQuestionIndex = 0;

@@ -34,7 +34,6 @@ input {
   margin-right: 0;
   width: min(450px, 90%);
   z-index: 200; /* Assegura que es mostri per sobre de tot */
-
 }
 
 /* Utilitzem el main-container per donar-li el format de caixa */
@@ -117,7 +116,6 @@ input {
   background-color: #567aea;
   transform: scale(1.1);
 }
-
 
 /*****************************************************************************/
 /* 3. ESTILS DE FORMULARIS D'AUTENTICACIÓ I PERFIL */
@@ -327,6 +325,7 @@ input {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .lessons-container {
@@ -347,15 +346,27 @@ input {
 }
 
 .close-button {
-    position: fixed; /* Posicionamiento absoluto dentro del sidebar */
-    top: 80px;
-    right: 40px;
-    z-index: 1000;
-    font-size: 35px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: #333;
+  position: fixed; /* Posicionamiento absoluto dentro del sidebar */
+  top: 80px;
+  right: 40px;
+  z-index: 1000;
+  font-size: 35px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+.close-button-lessons {
+  position: fixed; /* Posicionamiento absoluto dentro del sidebar */
+  top: 40px;
+  left: 150px;
+  z-index: 1000;
+  font-size: 35px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
 }
 
 /* Estils de contingut */
@@ -443,7 +454,7 @@ input {
   transition: background-color 0.3s ease;
   margin-top: 1.5rem;
   color: white;
-  width:100%;
+  width: 100%;
   white-space: normal;
   box-sizing: border-box;
 }
@@ -486,8 +497,7 @@ input {
 /* Pantallas menores de 750 */
 /*****************************************************************************/
 @media (max-width: 750px) {
-
-    .top-menu {
+  .top-menu {
     flex-direction: column; /* Apila los elementos verticalmente */
     align-items: flex-start; /* Alinea los elementos a la izquierda */
   }
@@ -498,12 +508,38 @@ input {
 
   .menu-right {
     width: 100%; /* Asegura que ocupe todo el ancho disponible */
-    justify-content: space-around; /* Distribuye los botones equitativamente en la fila */
+    flex-wrap: wrap;
+    justify-content: space-between; /* Distribuye los botones equitativamente en la fila */
+    gap: 10px;
     margin-top: 1rem; /* Añade un espacio entre las dos filas */
   }
-      .exit-quiz-button {
-        /* Puedes ajustar más específicamente aquí */
-        padding: 0.8rem; /* Un poco menos de padding para dejar más espacio al texto */
-        font-size: 0.85rem; /* Fuente un poco más pequeña si es necesario */
-    }
+  .menu-right .menu-button,
+  .menu-right .logout-button {
+    /* Define un ancho fijo o un porcentaje para que quepan en las filas */
+    width: 48%; /* Esto creará 2 botones por fila */
+    margin-bottom: 5px; /* Espacio entre las filas */
+  }
+
+
+  .contenedor-pantalla-dividida {
+    flex-direction: column;
+    margin-top: 20px;
+    width: 100%; /* Asegura que ocupe todo el ancho */
+  }
+  .lessons-container,
+  .quiz-main-container,
+  .sidebar {
+    width: 100%;
+  }
+
+  .exit-quiz-button {
+    /* Puedes ajustar más específicamente aquí */
+    padding: 0.8rem; /* Un poco menos de padding para dejar más espacio al texto */
+    font-size: 0.85rem; /* Fuente un poco más pequeña si es necesario */
+  }
+
+ 
+  .lessons-container {
+    display: none;
+  }
 }
