@@ -1,15 +1,13 @@
-LINGUAQUIZ 🚀
+# LINGUAQUIZ 🚀
 Aprende inglés de forma inteligente y pautada
 LINGUAQUIZ es una aplicación web diseñada para facilitar el aprendizaje del idioma inglés a través de un sistema de lecciones estructuradas y evaluaciones progresivas. La aplicación te guía a través de temas de vocabulario y gramática, asegurando que domines cada lección antes de avanzar a la siguiente.
 
 
 ## 🌐 Sitio Web
 Puedes ver la aplicación en funcionamiento en el siguiente enlace:
-[**Visita LINGUAQUIZ**](https://linguaquiz.netlify.app/
-<img width="205" height="21" alt="image" src="https://github.com/user-attachments/assets/47646c59-ffca-405a-884e-3d25f04c4eb1" />
-)
+https://linguaquiz.netlify.app/
 
-🎯 Características Principales
+## 🎯 Características Principales
 Lecciones Progresivas: El contenido está organizado en lecciones que se desbloquean a medida que completas el anterior, garantizando un aprendizaje secuencial y efectivo.
 
 Aprendizaje del vocabulario: La aplicación te dice la palabra en inglés para facilitar la comprensión oral.
@@ -20,7 +18,7 @@ Seguimiento del Progreso: Registra tu avance en cada lección para que puedas ve
 
 Diseño Responsivo: La interfaz se adapta perfectamente a dispositivos de escritorio, tabletas y móviles, permitiendo que estudies en cualquier momento y lugar.
 
-🛠️ Tecnologías Utilizadas
+## 🛠️ Tecnologías Utilizadas
 HTML5: Para la estructura y organización del contenido.
 
 CSS3: Para dar estilo y asegurar un diseño responsivo.
@@ -33,5 +31,5 @@ Font Awesome: Para los íconos utilizados en la interfaz de usuario.
 
 marked.js: Una librería para renderizar texto en formato Markdown como HTML, utilizada para las explicaciones de las lecciones.
 
-🔒 Licencia
+## 🔒 Licencia
 Este proyecto es de licencia privada. No se permite su uso, copia, modificación o distribución sin el permiso explícito del autor. Todos los derechos están reservados.
