@@ -34,7 +34,7 @@ input {
   margin-right: 0;
   width: min(450px, 90%);
   z-index: 200; /* Assegura que es mostri per sobre de tot */
-  display: none; /* Amaguem per defecte */
+
 }
 
 /* Utilitzem el main-container per donar-li el format de caixa */
@@ -118,17 +118,6 @@ input {
   transform: scale(1.1);
 }
 
-#results-button {
-  display: none;
-}
-
-.visible {
-  display: flex;
-}
-
-.oculto {
-  display: none;
-}
 
 /*****************************************************************************/
 /* 3. ESTILS DE FORMULARIS D'AUTENTICACIÓ I PERFIL */
@@ -324,7 +313,7 @@ input {
 /*****************************************************************************/
 /* 5. ESTILS DEL DISSENY DE PANTALLA DIVIDIDA */
 /*****************************************************************************/
-.split-screen-container {
+.contenedor-pantalla-dividida {
   display: flex;
   flex: 1;
   padding-top: 80px;
@@ -355,6 +344,18 @@ input {
   flex: 1;
   background-color: rgba(240, 240, 240, 0.9);
   border-left: 1px solid #ccc;
+}
+
+.close-button {
+    position: fixed; /* Posicionamiento absoluto dentro del sidebar */
+    top: 80px;
+    right: 40px;
+    z-index: 1000;
+    font-size: 35px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #333;
 }
 
 /* Estils de contingut */
@@ -485,12 +486,6 @@ input {
 /* Pantallas menores de 750 */
 /*****************************************************************************/
 @media (max-width: 750px) {
-  .sidebar {
-    display: none;
-  }
-    #results-button {
-        display: flex;
-    }
 
     .top-menu {
     flex-direction: column; /* Apila los elementos verticalmente */

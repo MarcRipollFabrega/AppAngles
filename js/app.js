@@ -19,7 +19,7 @@ import { initQuiz } from "./quiz.js";
 /* 2. VARIABLES DELS ELEMENTS HTML (CORREGIT) */
 /***************************************************************************/
 const authFormsContainer = document.querySelector("#auth-forms-container");
-const splitScreenContainer = document.querySelector(".split-screen-container");
+const contenedorPantallaDividida = document.querySelector(".contenedor-pantalla-dividida");
 const registroForm = document.getElementById("registro-form");
 const loginForm = document.getElementById("login-form");
 const perfilContainer = document.getElementById("perfil-container");
@@ -42,6 +42,9 @@ const nombreUsuarioInput = document.getElementById("nombre-usuario");
 const quizContainer = document.getElementById("quiz-container");
 const moduleSelection = document.getElementById("module-selection");
 const exitQuizButton = document.getElementById("exit-quiz-button");
+
+const infoDerecha = document.querySelector(".sidebar"); //Panel de resultados
+const closeButtonSidebar = document.querySelector(".close-button");
 
 /***************************************************************************/
 /* 3. FUNCIONS D'UTILITAT I DADES */
@@ -89,9 +92,6 @@ async function cargarDatosPerfil() {
 /* 4. LÒGICA DE LA INTERFÍCIE D'USUARI (CORREGIT) */
 /***************************************************************************/
 document.addEventListener("DOMContentLoaded", async () => {
-  // === LÒGICA D'INICIALITZACIÓ DE LA INTERFÍCIE ===
-  // L'estat inicial ja el gestionarà 'onAuthStateChange', no cal posar-lo aquí.
-
   // Lògica de verificació de sessió i inicialització de la interfície.
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     userSession = session;
@@ -100,16 +100,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (session) {
       // === USUARIO AUTENTICADO ===
       authFormsContainer.style.display = "none";
-      splitScreenContainer.style.display = "flex";
+      contenedorPantallaDividida.style.display = "flex";
       perfilContainer.style.display = "none";
-
-      // Mostrar los botones del menú superior
-      resultsButton.classList.remove("oculto");
-      resultsButton.classList.add("visible");
-      logoutButton.classList.remove("oculto");
-      logoutButton.classList.add("visible");
-      perfilButton.classList.remove("oculto");
-      perfilButton.classList.add("visible");
 
       // Mostrar la selección de módulos por defecto
       if (moduleSelection) {
@@ -126,16 +118,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       // === USUARIO NO AUTENTICADO ===
       authFormsContainer.style.display = "flex";
-      splitScreenContainer.style.display = "none";
+      contenedorPantallaDividida.style.display = "none";
       perfilContainer.style.display = "none";
-
-      // Ocultar los botones del menú superior
-      resultsButton.classList.remove("visible");
-      resultsButton.classList.add("oculto");
-      logoutButton.classList.remove("visible");
-      logoutButton.classList.add("oculto");
-      perfilButton.classList.remove("visible");
-      perfilButton.classList.add("oculto");
     }
   });
 
@@ -241,7 +225,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   closePerfilButton.addEventListener("click", () => {
     if (userSession) {
-      splitScreenContainer.style.display = "flex";
+      contenedorPantallaDividida.style.display = "flex";
     } else {
       authFormsContainer.style.display = "flex";
     }
@@ -327,4 +311,44 @@ document.addEventListener("DOMContentLoaded", async () => {
       moduleSelection.style.display = "block";
     });
   }
+  // Función para controlar la visibilidad según el ancho de la pantalla
+  function controlarVisibilidad() {
+    const anchoPantalla = window.innerWidth; // Ancho pantalla
+    
+    
+    if (anchoPantalla < 750) {
+      // Ejemplo para pantallas pequeñas
+      infoDerecha.style.display = "none";
+      resultsButton.style.display = "block";
+      closeButtonSidebar.style.top = "130px";
+      closeButtonSidebar.style.right = "20px";
+  
+    } else {
+      // Ejemplo para pantallas grandes
+      infoDerecha.style.display = "block";
+      resultsButton.style.display = "none";
+    }
+  }
+  // Llama a la función al cargar la página
+  window.addEventListener("load", controlarVisibilidad);
+
+  // Llama a la función cada vez que la ventana cambie de tamaño
+  window.addEventListener("resize", controlarVisibilidad);
+
+  /************************************************************/
+  /* Evento para escuchar el boton de resultados*/
+  /***********************************************************/
+  resultsButton.addEventListener("click", () => {
+    if (infoDerecha.style.display === "block") {
+      // Si está visible, lo oculta
+      infoDerecha.style.display = "none";
+    } else {
+      // Si está oculto, lo muestra
+      infoDerecha.style.display = "block";
+    }
+  });
+  closeButtonSidebar.addEventListener("click", () => {
+    // 3. Oculta el aside (la X solo debe cerrar, no abrir)
+    infoDerecha.style.display = "none";
+  });
 });

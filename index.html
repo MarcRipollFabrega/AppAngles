@@ -37,20 +37,20 @@
         </div>
         <!--? BOTONES DEL MENÚ -->
         <div class="menu-right">
-          <button id="results-button" class="menu-button oculto">
+          <button id="results-button" class="menu-button">
             Resultados <i class="fa-solid fa-bars"></i>
           </button>
-          <button id="perfil-button" class="menu-button oculto">
+          <button id="perfil-button" class="menu-button">
             Perfil <i class="fa-solid fa-user-circle"></i>
           </button>
-          <button id="logout-button" class="logout-button oculto" >
+          <button id="logout-button" class="logout-button" >
             Cerrar Sesión <i class="fa-solid fa-right-from-bracket"></i>
           </button>
         </div>
       </nav>
     </header>
 <!--? DIVIDE LA PANTALLA EN TRES PARTES -->
-    <div class="split-screen-container">
+    <div class="contenedor-pantalla-dividida">
       <!--? INFORMACIÓN DE LAS LECCIONES -->
       <section class="main-container lessons-container" id="lessons-container">
         <div id="lessons-list"></div>
@@ -79,34 +79,19 @@
       </main>
       <!--? INFORMACIÓN A LA DERECHA DE LOS RESULTADOS -->
       <aside class="sidebar">
+        <button class="close-button" aria-label="Cerrar menú">&times;</button>
         <div id="progress-container">
           <h2 id="progress-chart-title">Progreso del Nivel</h2>
           <!--? GRAFICO SVG -->
           <div class="progress-chart">
-            <svg
-              id="progress-chart-svg"
-              width="200"
-              height="200"
-              viewBox="0 0 100 100"
-            >
+            <svg id="progress-chart-svg" width="200" height="200"viewBox="0 0 100 100" >
               <circle cx="50" cy="50" r="45" fill="#f0f0f0" />
-
               <path id="no-practicadas-path" fill="#CCCCCC"></path>
               <path id="incorrectas-path" fill="#D9534F"></path>
               <path id="en-progreso-path" fill="#F0AD4E"></path>
               <path id="aprendidas-path" fill="#5CB85C"></path>
-
               <circle cx="50" cy="50" r="30" fill="white"></circle>
-
-              <text
-                id="level-text"
-                x="50"
-                y="50"
-                text-anchor="middle"
-                dominant-baseline="central"
-                font-size="10"
-                font-weight="bold"
-              ></text>
+              <text id="level-text" x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold"></text>
             </svg>
             <div id="progress-text"></div>
           </div>
